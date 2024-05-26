@@ -4,7 +4,6 @@ import logging
 
 class CodebaseTool:
     name = "CodebaseSearch"
-    input_variable = "search_query"
     desc = """
         searches the codebase for classes or functions specified in 'search_query'.
         Example use: CodebaseSearch(my_func(param1, param2)) or CodebaseSearch(Person(age, gender)).
