@@ -8,6 +8,8 @@ Python version needs to be at least 3.11 and docker needs to be [installed](http
 1. `cd SWE-bench-docker`
 2. `pip install -r requirements.txt`
 3. `pip install swebench`
+4. `pip install GitPython` 
+5. `pip install validators`
 
 ## Test SWE-Bench is working
 
