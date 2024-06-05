@@ -1,0 +1,42 @@
+{
+    "no_generation": [],
+    "generated": [
+        "django__django-15272",
+        "django__django-15127",
+        "django__django-7188",
+        "django__django-12933",
+        "django__django-11099",
+        "django__django-12009",
+        "django__django-12172",
+        "django__django-5470",
+        "django__django-7475",
+        "django__django-15474"
+    ],
+    "with_logs": [
+        "django__django-15272",
+        "django__django-15127",
+        "django__django-12933",
+        "django__django-11099",
+        "django__django-12009",
+        "django__django-12172",
+        "django__django-15474"
+    ],
+    "install_fail": [],
+    "reset_failed": [],
+    "no_apply": [
+        "django__django-15272",
+        "django__django-15127",
+        "django__django-12933",
+        "django__django-12009",
+        "django__django-12172",
+        "django__django-15474"
+    ],
+    "applied": [
+        "django__django-11099"
+    ],
+    "test_errored": [],
+    "test_timeout": [],
+    "resolved": [
+        "django__django-11099"
+    ]
+}
