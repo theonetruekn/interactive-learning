@@ -13,7 +13,7 @@ class StackoverflowQuestions:
         pass
         
     def __call__(self, question):
-        return self._search_stackoverflow_for_relevant_questions(query=question)
+        return _search_stackoverflow_for_relevant_questions(query=question)
     
     def _search_stackoverflow_for_relevant_questions(self, query: str, tag : str ="python", num_results: int = 2) -> Optional[List[Tuple[str, str]]]:
         """
