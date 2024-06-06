@@ -1,6 +1,5 @@
 import os
 import ast
-import importlib.util
 
 class ReplaceMethod:
     name = "ReplaceMethod"

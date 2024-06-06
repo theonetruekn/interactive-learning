@@ -2,23 +2,19 @@ import os
 import inspect
 import importlib.util
 
-class GetAllMethodsHeadsFromClass:
-    name = "GetAllMethodsHeadsFromClass"
+class GetClassSummary:
+    name = "Get_Class_Summary"
     input_variable = "class_name"
-    desc =  """
-            Returns a formatted string of methods heads from the class specified in `class_name`.
-            Example use: GetAllMethodsHeadsFromClass("my_class_name")
-            """
+    desc = "Returns a formatted string of methods heads from the class specified in `class_name`."
     
-    def __init__(self, root):
-        # Where root is the current working directory
-        self.root = root 
+    def __init__(self):
+        pass
 
-    def __call__(self, class_name):
+    def __call__(self, class_name, root):
         formatted_methods = []
 
-        for filename in os.listdir(self.root):
-            full_path = os.path.join(self.root, filename)
+        for filename in os.listdir(root):
+            full_path = os.path.join(root, filename)
             if os.path.isfile(full_path) and full_path.endswith(".py"):
                 module_name = os.path.splitext(filename)[0]
                 spec = importlib.util.spec_from_file_location(module_name, full_path)
@@ -42,7 +38,6 @@ class GetAllMethodsHeadsFromClass:
                                     docstring = f'    """\n{indented_docstring}\n    """'
                                 formatted_methods.append(f"{method_head}\n{docstring}")
         
-        # Join all formatted methods with an additional newline between each method
         return "\n\n".join(formatted_methods)
 
     def _indent(self, text, spaces):
