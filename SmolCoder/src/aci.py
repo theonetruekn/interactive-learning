@@ -13,9 +13,5 @@ class AgentComputerInterface:
         self.cwd = cwd
         self.tools = tools
 
-    def _init_tools(self, tools:dict):
-        #TODO
-        pass
-
-    def _generate_cwd_information(self):
+    def _generate_cwd_information(self) -> str:
         return f"(Current Working Directory: {self.cwd}"
