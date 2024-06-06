@@ -3,13 +3,15 @@
 
 from pathlib import Path
 
+from SmolCoder.src.toolkit import Toolkit
+
 
 class AgentComputerInterface:
 
-    def __init__(self, cwd:Path, tools:dict) -> None:
+    def __init__(self, cwd:Path, tools:Toolkit) -> None:
         assert(cwd.exists())
         self.cwd = cwd
-        self.tools = self._init_tools(tools)
+        self.tools = tools
 
     def _init_tools(self, tools:dict):
         #TODO
