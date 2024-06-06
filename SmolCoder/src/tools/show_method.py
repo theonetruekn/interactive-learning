@@ -1,14 +1,21 @@
-import os
 import ast
+import os
+from typing import List
 
-class GetMethodBody:
-    name = "GetMethodBody"
-    input_variable = "class_name, method_name"
-    desc =  """
-            Return a formatted String of the method body from 
-            the specified class and method name in `class_name` and `method_name`.
-            Example use: GetMethodBody("MyClassName", "MyMethodName")
-            """
+from SmolCoder.src.tools.tool import Tool
+
+class ShowMethodBody(Tool):
+    @property
+    def name(self) -> str:
+        return "Show_Method_Body"
+    
+    @property
+    def input_variables(self) -> List[str]:
+        return ["class_name", "method_name"]
+
+    @property
+    def desc(self) -> str:
+        return "returns a formatted String of the method body from the specified class and method name in `class_name` and `method_name`."
     
     def __init__(self, root):
         self.root = root

@@ -1,14 +1,20 @@
 from pathlib import Path
+from typing import List
 
 from SmolCoder.src.tools.tool import Tool
 
 class ListFiles(Tool):
-    name = "List_Files"
-    input_variable = "folder" 
-    desc =  "lists all the files and subfolder that are in the folder."
+    @property
+    def name(self) -> str:
+        return "List_Files"
     
-    def __init__(self):
-        pass
+    @property
+    def input_variable(self) -> List[str]:
+        return ["folder"]
+
+    @property
+    def desc(self) -> str:
+        return "lists all the files and subfolder that are in the folder."
 
     def __call__(self, folder:Path):
         folder_path = Path(folder)

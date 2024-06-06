@@ -1,20 +1,25 @@
 import os
 import ast
+from typing import List
 
-class ReplaceMethod:
-    name = "ReplaceMethod"
-    input_variable = "class_name, method_name, new_method"
-    desc =  """
-            Replaces the specified method `method_name` in the `class_name` with `new_method`.
-            Example Use: ReplaceMethod("MyClassName", "old_method", "new_method")
-            """
+from SmolCoder.src.tools.tool import Tool
+
+class ReplaceMethod(Tool):
+    @property
+    def name(self) -> str:
+        return "Replace_Method"
     
-    def __init__(self, root):
-        self.root = root
+    @property
+    def input_variable(self) -> List[str]:
+        return ["class_name", "method_name", "new_method"]
 
-    def __call__(self, class_name, method_name, new_method):
-        for filename in os.listdir(self.root):
-            full_path = os.path.join(self.root, filename)
+    @property
+    def desc(self) -> str:
+        return "replaces the specified method `method_name` in the `class_name` with `new_method`."
+
+    def __call__(self, class_name, method_name, new_method, cwd):
+        for filename in os.listdir(cwd):
+            full_path = os.path.join(cwd, filename)
             if os.path.isfile(full_path) and full_path.endswith(".py"):
                 with open(full_path, 'r', encoding='utf-8') as f:
                     content = f.read()
@@ -34,4 +39,4 @@ class ReplaceMethod:
                                         return f"Method '{method_name}' in class '{class_name}' replaced successfully in file '{filename}'."
                     except SyntaxError as e:
                         return f"Error parsing file '{filename}': {e}"
-        return f"Error: Class '{class_name}' not found in any Python files in the directory '{self.root}'."
+        return f"Error: Class '{class_name}' not found in any Python files in the directory '{cwd}'."

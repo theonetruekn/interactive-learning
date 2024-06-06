@@ -1,17 +1,26 @@
-from abc import ABC, ABCMeta
+from abc import ABC, abstractmethod
+from typing import Any, List
 
-class CombinedMeta(ABCMeta):
-    def __new__(mcs, name, bases, dct):
-        cls = super().__new__(mcs, name, bases, dct)
-        
-        # Check for required static attributes
-        required_static_attrs = ['name', 'input_variable', 'desc']
-        for attr in required_static_attrs:
-            if not isinstance(getattr(cls, attr, None), str):
-                raise TypeError(f"Class '{name}' must define a static attribute '{attr}' as a string.")
-        
-        return cls
+class Tool(ABC):
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        pass
 
-class Tool(ABC, metaclass=CombinedMeta):
-   def __init__(self) -> None:
-       super().__init__() 
+    @property
+    @abstractmethod
+    def input_variables(self) -> List[str]:
+        pass
+
+    @property
+    @abstractmethod
+    def desc(self) -> str:
+        pass
+    
+    @property
+    def short_desc(self) -> str:
+        return f'{self.name}[{",".join(self.input_variables)}]'
+    
+    @abstractmethod
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        pass

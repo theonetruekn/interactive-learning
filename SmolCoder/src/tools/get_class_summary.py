@@ -1,14 +1,22 @@
 import os
 import inspect
 import importlib.util
+from typing import List
 
-class GetClassSummary:
-    name = "Get_Class_Summary"
-    input_variable = "class_name"
-    desc = "Returns a formatted string of methods heads from the class specified in `class_name`."
+from SmolCoder.src.tools.tool import Tool
+
+class GetClassSummary(Tool):    
+    @property
+    def name(self) -> str:
+        return "Get_Class_Summary"
     
-    def __init__(self):
-        pass
+    @property
+    def input_variable(self) -> List[str]:
+        return ["class_name"]
+
+    @property
+    def desc(self) -> str:
+        return "Returns a formatted string of methods heads from the class specified in `class_name`."
 
     def __call__(self, class_name, root):
         formatted_methods = []
