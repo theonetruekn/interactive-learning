@@ -9,7 +9,7 @@ class ListFiles(Tool):
         return "List_Files"
     
     @property
-    def input_variable(self) -> List[str]:
+    def input_variables(self) -> List[str]:
         return ["folder"]
 
     @property

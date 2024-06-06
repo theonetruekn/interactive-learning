@@ -10,7 +10,7 @@ class ReplaceMethod(Tool):
         return "Replace_Method"
     
     @property
-    def input_variable(self) -> List[str]:
+    def input_variables(self) -> List[str]:
         return ["class_name", "method_name", "new_method"]
 
     @property
@@ -18,6 +18,7 @@ class ReplaceMethod(Tool):
         return "replaces the specified method `method_name` in the `class_name` with `new_method`."
 
     def __call__(self, class_name, method_name, new_method, cwd):
+        assert(self._lint(new_method))
         for filename in os.listdir(cwd):
             full_path = os.path.join(cwd, filename)
             if os.path.isfile(full_path) and full_path.endswith(".py"):
@@ -40,3 +41,6 @@ class ReplaceMethod(Tool):
                     except SyntaxError as e:
                         return f"Error parsing file '{filename}': {e}"
         return f"Error: Class '{class_name}' not found in any Python files in the directory '{cwd}'."
+
+    def _lint(self, method:str) -> str:
+        raise NotImplementedError

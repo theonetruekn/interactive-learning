@@ -11,7 +11,7 @@ class GetClassSummary(Tool):
         return "Get_Class_Summary"
     
     @property
-    def input_variable(self) -> List[str]:
+    def input_variables(self) -> List[str]:
         return ["class_name"]
 
     @property
