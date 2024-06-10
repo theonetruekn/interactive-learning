@@ -41,4 +41,4 @@ class AgentComputerInterface:
         else:
             tool = self.tools.find_tool(tool_name)
             assert (tool is not None), "No tool was found" # TODO: Maybe add some stuff about "you can use fuzzy search too"
-            return tool(input_variables)
+            return tool(input_variables, cwd=self.cwd)
