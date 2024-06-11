@@ -17,3 +17,5 @@
 - different tools for each use case or same tool with different input
 
 - Fuzzy Matching / Fuzzy Tokenizing for Actions
+
+- Ollama should stop after giving an action.
