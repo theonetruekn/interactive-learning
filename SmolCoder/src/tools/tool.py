@@ -16,6 +16,11 @@ class Tool(ABC):
     @abstractmethod
     def desc(self) -> str:
         pass
+
+    @property
+    @abstractmethod
+    def example(self) -> str:
+        pass
     
     @property
     def short_desc(self) -> str:
