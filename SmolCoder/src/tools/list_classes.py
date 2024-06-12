@@ -9,6 +9,10 @@ class GetClassDocstrings(Tool):
     def name(self) -> str:
         return "List_Classes"
     
+    @property 
+    def example(self):
+        pass
+
     @property
     def input_variables(self) -> List[str]:
         return ["file_name"]
@@ -41,7 +45,10 @@ class GetClassDocstrings(Tool):
             for node in ast.walk(tree):
                 if isinstance(node, ast.ClassDef):
                     class_name = node.name
-                    docstring = ast.get_docstring(node) or "No docstring provided"
+                    docstring = ast.get_docstring(node)
+                    if not docstring:
+                        docstring =  "No docstring provided"
+
                     class_entries.append((class_name, docstring))
             
             return class_entries

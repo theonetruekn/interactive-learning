@@ -9,6 +9,10 @@ class ReplaceMethod(Tool):
     def name(self) -> str:
         return "Replace_Method"
     
+    @property 
+    def example():
+        pass
+
     @property
     def input_variables(self) -> List[str]:
         return ["class_name", "method_name", "new_method"]
@@ -18,7 +22,8 @@ class ReplaceMethod(Tool):
         return "replaces the specified method `method_name` in the `class_name` with `new_method`."
 
     def __call__(self, class_name, method_name, new_method, cwd):
-        assert(self._lint(new_method))
+        # TODO: Enable this when implemented
+        # assert(self._lint(new_method))
         for filename in os.listdir(cwd):
             full_path = os.path.join(cwd, filename)
             if os.path.isfile(full_path) and full_path.endswith(".py"):

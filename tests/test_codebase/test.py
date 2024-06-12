@@ -1,8 +1,8 @@
-"""
-Class Docstring
-"""
 class MyClass:
-   def __init__(self, one: str, two: int):
+    """
+    Class Docstring
+    """
+    def __init__(self, one: str, two: int):
         """
         Init the class. Careful: do not touch!
         """
@@ -13,7 +13,10 @@ class MyClass:
         """
         This method does stuff.
         """
-        print('test')
+        return 'test'
 
 class MyClass2:
+    """
+    Another class Docstring
+    """
     pass

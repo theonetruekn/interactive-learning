@@ -8,6 +8,10 @@ class ListFiles(Tool):
     def name(self) -> str:
         return "List_Files"
     
+    @property 
+    def example():
+        pass
+
     @property
     def input_variables(self) -> List[str]:
         return ["folder"]

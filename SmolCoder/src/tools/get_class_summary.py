@@ -17,6 +17,10 @@ class GetClassSummary(Tool):
     @property
     def desc(self) -> str:
         return "Returns a formatted string of methods heads from the class specified in `class_name`."
+   
+    @property 
+    def example():
+        pass
 
     def __call__(self, class_name, root):
         formatted_methods = []
