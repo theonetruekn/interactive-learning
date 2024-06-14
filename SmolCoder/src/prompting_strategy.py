@@ -10,7 +10,7 @@ class PromptingStrategy(ABC):
         self.toolkit = toolkit
 
     @abstractmethod
-    def __call__(self, prompt:str, max_iters:int = 3) -> str:
+    def __call__(self, prompt:str) -> str:
         pass
     
     @staticmethod
@@ -56,7 +56,7 @@ class ReAct(PromptingStrategy):
 
         return sysprompt
 
-    def __call__(self, prompt: str, max_iters: int = 3, begin=True) -> str:
+    def __call__(self, prompt: str, begin=True) -> str:
         if begin:
             prompt += self.sysprompt
         prompt += self.lm.query_completion(prompt)
