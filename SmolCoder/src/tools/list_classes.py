@@ -11,7 +11,7 @@ class GetClassDocstrings(Tool):
     
     @property 
     def example(self):
-        pass
+        raise NotImplementedError
 
     @property
     def input_variables(self) -> List[str]:

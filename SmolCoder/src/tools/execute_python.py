@@ -15,7 +15,7 @@ class ExecutePythonCode(Tool):
 
     @property
     def input_variables(self) -> List[str]:
-        return "python_code"
+        return ["python_code"]
 
     @property
     def desc(self) -> str:
@@ -23,7 +23,7 @@ class ExecutePythonCode(Tool):
 
     @property
     def example(self) -> str:
-        pass
+        raise NotImplementedError
 
     def __call__(self, python_code: str) -> Any:
         """"

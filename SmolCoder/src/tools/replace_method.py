@@ -11,7 +11,7 @@ class ReplaceMethod(Tool):
     
     @property 
     def example():
-        pass
+        raise NotImplementedError
 
     @property
     def input_variables(self) -> List[str]:

@@ -18,8 +18,8 @@ class ShowMethodBody(Tool):
         return ["class_name", "method_name"]
     
     @property 
-    def example():
-        pass
+    def example(self):
+        raise NotImplementedError
 
     @property
     def desc(self) -> str:

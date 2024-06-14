@@ -20,7 +20,7 @@ class GetClassSummary(Tool):
    
     @property 
     def example():
-        pass
+        raise NotImplementedError
 
     def __call__(self, class_name, root):
         formatted_methods = []
