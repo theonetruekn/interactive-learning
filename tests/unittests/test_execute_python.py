@@ -18,11 +18,12 @@ def test_get_class_summary():
     root = os.path.join(os.path.dirname(__file__), '../test_codebase')
         
     # Example usage
-    code_str = """# This is the Python code to be executed
-a = 10
-b = 20
-__result__ = a + b
-"""
+    code_str = (
+            "# This is the Python code to be executed"
+            "a = 10"
+            "b = 20"
+            "__result__ = a + b"
+    )
 
     # Call the __call__ method
     result = tool(code_str)
