@@ -15,7 +15,14 @@ class Toolkit:
         return {tool.name:tool for tool in tools}
     
     def find_tool(self, query:str, mode:SearchMode=SearchMode.EXACT) -> Optional[Tool]:
-        raise NotImplementedError
+        normalized_query = query.lower()
+        
+        if mode == SearchMode.EXACT:
+            return self._tools.get(normalized_query)
+        elif mode == SearchMode.FUZZY:
+            raise NotImplementedError
+        else:
+            return None
 
     def pretty_print_tools(self) -> str:
         return "\n".join(
