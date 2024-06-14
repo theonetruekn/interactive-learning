@@ -36,27 +36,25 @@ class ReAct(PromptingStrategy):
 
         sysprompt += self.toolkit.pretty_print_tools()
 
-        #TODO
         sysprompt += (
             "---\n\n"
             "Follow the following format:\n\n"
-            "Thought 1: Reasoning which action to take to solve the task.\n"
-            "Action 1: Always either "
+            "Thought: Reasoning which action to take to solve the task.\n"
+            "Action: Always either "
         )
 
         sysprompt += self.toolkit.print_tool_short_descs()
 
         sysprompt += (
-            "\nObservation 1: result of Action 1\n"
-            "Thought 2: next steps to take based on the previous Observation\n"
+            "\nObservation: result of the previous Action\n"
+            "Thought: next steps to take based on the previous Observation\n"
             "...\n"
-            "until Action is of type Finish.\n\n"
+            "until Action is of type `Finish`.\n\n"
             "---\n\n"
             "Question: "
         )
 
         return sysprompt
-
 
     def __call__(self, prompt: str, max_iters: int = 3, begin=True) -> str:
         if begin:
