@@ -46,10 +46,10 @@ Thought can reason about the current situation, and Action can be the following 
 
 Follow the following format:
 
-Thought 1: Reasoning which action to take to solve the task.
-Action 1: Always either CodeSearch[search_query] or Finish[answer]
-Observation 1: result of Action 1
-Thought 2: next steps to take based on the previous Observation
+Thought: Reasoning which action to take to solve the task.
+Action: Always either CodeSearch[search_query] or Finish[answer]
+Observation: result of the previous Action
+Thought: next steps to take based on the previous Observation
 ...
 until Action is of type Finish.
 
