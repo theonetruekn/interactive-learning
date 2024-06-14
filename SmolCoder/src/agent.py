@@ -22,6 +22,13 @@ class SmolCoder:
         self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit)
         self.prompting_strategy = PromptingStrategy.create(model, strategy=prompting_strategy, toolkit=toolkit)
     
-    def __call__(self, userprompt: str) -> str:
-        # interaction between ACI and prompting_strategy
-        raise NotImplementedError
+    def __call__(self, userprompt: str, max_calls:int = 10) -> str:
+        trajectory = ""
+        for i in range(max_calls):
+            start = False
+            if i == 1:
+                start = True
+            trajectory, action_sequence = self.prompting_strategy(prompt=userprompt, begin=start)
+            obs = self.ACI.get_observation(action_sequence)
+            trajectory += obs
+        return trajectory
