@@ -35,13 +35,17 @@ class SmolCoder:
         trajectory = ""
         for i in range(max_calls):
             start = False
-            if i == 1:
+            if i == 0:
+                print("Starting prompt detected")
                 start = True
+            trajectory = self.prompting_strategy(prompt=userprompt, begin=start)
+            print("Current Trajectory:", trajectory)
+            action_sequence = self._get_last_action(trajectory)
+            print("Extracted Action Sequence: ", action_sequence)
+            obs = self.ACI.get_observation(action_sequence)
+            trajectory += obs
+
             if self.ACI.finished:
                 break
 
-            trajectory = self.prompting_strategy(prompt=userprompt, begin=start)
-            action_sequence = self._get_last_action(trajectory)
-            obs = self.ACI.get_observation(action_sequence)
-            trajectory += obs
         return trajectory
