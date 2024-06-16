@@ -19,7 +19,7 @@ class GetClassSummary(Tool):
         return "Returns a formatted string of methods heads from the class specified in `class_name`."
    
     @property 
-    def example():
+    def example(self):
         raise NotImplementedError
 
     def __call__(self, class_name, root):

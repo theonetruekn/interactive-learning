@@ -9,7 +9,7 @@ class ListFiles(Tool):
         return "List_Files"
     
     @property 
-    def example():
+    def example(self):
         raise NotImplementedError
 
     @property
