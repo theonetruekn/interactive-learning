@@ -59,7 +59,7 @@ class ReAct(PromptingStrategy):
         if begin:
             prompt = self.sysprompt + prompt + "\n"
         
-        prompt += self.lm.query_completion(prompt)
+        prompt += self.lm.query_completion(prompt, stop_token="Observation")
         
-        print("final prompt with llm response\n " + prompt)
+        print("final prompt with llm response\n" + prompt)
         return prompt
