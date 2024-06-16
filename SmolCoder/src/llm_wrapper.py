@@ -6,8 +6,7 @@ class LLM:
         self.model = model
         self.url = url
 
-    # check out `raw` parameter too
-    def query_completion_experimental(self, prompt:str, stop_token="Observation") -> str:
+    def query_completion(self, prompt, stop_token=None):
         data = {
             "model": self.model,
             "prompt": prompt,
@@ -15,38 +14,30 @@ class LLM:
         }
 
         json_data = json.dumps(data)
-        response = requests.post(self.url, data=json_data, headers={'Content-Type': 'application/json'}, stream=True)
 
-        partial_response = ""
-        for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
-                chunk_data = json.loads(chunk.decode('utf-8'))
-                if "response" in chunk_data:
-                    partial_response += chunk_data["response"]
-                    if stop_token in partial_response:
-                        break
-                if chunk_data.get("done"):
-                    break
-
-        if partial_response == "":
-            raise ValueError
-        return partial_response
-
-    def query_completion(self, prompt, stream=False, options=None):
-            data = {
-                "model": self.model,
-                "prompt": prompt,
-                "stream": stream
-            }
-
-            if options is not None:
-                data['options'] = options
-
-            json_data = json.dumps(data)
-
+        try:
             response = requests.post(self.url, data=json_data, headers={'Content-Type': 'application/json'})
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise ValueError(f"Request failed: {e}")
 
-            return response.json()["response"]
+        response_text = ""
+        try:
+            for line in response.iter_lines():
+                if line:
+                    decoded_line = line.decode('utf-8')
+                    res_json = json.loads(decoded_line)
+                    response_text += res_json.get("response", "")
+                    if stop_token and stop_token in response_text:
+                        stop_index = response_text.find(stop_token)
+                        response_text = response_text[:stop_index + len(stop_token)]
+                        break
+        except json.JSONDecodeError as e:
+            print(f"JSON decoding failed: {e}")
+            print(f"Response content: {response.content}")
+            raise ValueError
+
+        return response_text
 
 
 if __name__ == "__main__":
