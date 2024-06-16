@@ -12,10 +12,11 @@ class Toolkit:
         self._tools = self._construct_tools(tools)
     
     def _construct_tools(self, tools:List[Tool]) -> Dict[str, Tool]:
-        return {tool.name:tool for tool in tools}
+        return {tool.name.lower(): tool for tool in tools}
     
     def find_tool(self, query:str, mode:SearchMode=SearchMode.EXACT) -> Optional[Tool]:
         normalized_query = query.lower()
+        print(f"Querying {normalized_query}\n")
         
         if mode == SearchMode.EXACT:
             return self._tools.get(normalized_query)
@@ -27,7 +28,7 @@ class Toolkit:
     def pretty_print_tools(self) -> str:
         try:
             return "\n".join(
-            f"({i}) {tool.short_desc}, which {tool.desc}. Example use: {tool.example}"
+            f"({i}) {tool.short_desc}, which {tool.desc}" #FIXME: Example use: {tool.example}
             for i, (_, tool) in enumerate(self._tools.items(), start=1))
         except NotImplementedError:
             print("Example function, not implemented")
