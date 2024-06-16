@@ -1,3 +1,5 @@
+import re
+
 from enum import Enum
 from pathlib import Path
 
@@ -22,13 +24,21 @@ class SmolCoder:
         self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit)
         self.prompting_strategy = PromptingStrategy.create(model, strategy=prompting_strategy, toolkit=toolkit)
     
+    def _get_last_action(self, trajectory: str) -> str:
+        matches = re.findall(r"Action:.*", trajectory)
+        if matches:
+            return matches[-1]
+        else:
+            raise ValueError("No lines found")
+
     def __call__(self, userprompt: str, max_calls:int = 10) -> str:
         trajectory = ""
         for i in range(max_calls):
             start = False
             if i == 1:
                 start = True
-            trajectory, action_sequence = self.prompting_strategy(prompt=userprompt, begin=start)
+            trajectory = self.prompting_strategy(prompt=userprompt, begin=start)
+            action_sequence = self._get_last_action(trajectory)
             obs = self.ACI.get_observation(action_sequence)
             trajectory += obs
         return trajectory
