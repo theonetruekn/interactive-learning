@@ -21,13 +21,11 @@ class GetClassDocstrings(Tool):
     def desc(self) -> str:
         return "lists all the class names and their docstring comments in the specified Python file."
 
-    def __init__(self, root_folder: Path):
-        self.root_folder = Path(root_folder)
-        if not self.root_folder.exists() or not self.root_folder.is_dir():
-            raise ValueError(f'The specified root folder does not exist or is not a directory: {self.root_folder}')
-
-    def __call__(self, file_name: str):
-        file_path = self.root_folder / file_name
+    def __call__(self, input_variables: List[str], cwd:Path):
+        file_name = input_variables[0]
+        
+        #TODO assert file_name exists
+        file_path = cwd / file_name
         
         if not file_path.exists():
             return f'The specified file does not exist: {file_path}'

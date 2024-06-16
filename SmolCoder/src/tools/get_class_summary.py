@@ -22,11 +22,12 @@ class GetClassSummary(Tool):
     def example(self):
         raise NotImplementedError
 
-    def __call__(self, class_name, root):
+    def __call__(self, input_variables:List[str], cwd):
+        class_name = input_variables[0]
         formatted_methods = []
 
-        for filename in os.listdir(root):
-            full_path = os.path.join(root, filename)
+        for filename in os.listdir(cwd):
+            full_path = os.path.join(cwd, filename)
             if os.path.isfile(full_path) and full_path.endswith(".py"):
                 module_name = os.path.splitext(filename)[0]
                 spec = importlib.util.spec_from_file_location(module_name, full_path)
