@@ -56,8 +56,16 @@ class ReAct(PromptingStrategy):
         return sysprompt
 
     def __call__(self, prompt: str, begin=True) -> str:
-        if begin:
-            prompt += self.sysprompt
-        prompt += self.lm.query_completion(prompt)
+        
+        print("prompt: " + prompt)
+        print("sysprompt: " + self.sysprompt)
 
+        if begin:
+            prompt = self.sysprompt + prompt
+        
+        print("final prompt: " +prompt)
+        prompt += self.lm.query_completion(prompt)
+        
+
+        print("final prompt with llm: " +prompt)
         return prompt

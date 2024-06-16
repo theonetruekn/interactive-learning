@@ -37,6 +37,9 @@ class SmolCoder:
             start = False
             if i == 1:
                 start = True
+            if self.ACI.finished:
+                break
+
             trajectory = self.prompting_strategy(prompt=userprompt, begin=start)
             action_sequence = self._get_last_action(trajectory)
             obs = self.ACI.get_observation(action_sequence)

@@ -11,27 +11,29 @@ class LLM:
         data = {
             "model": self.model,
             "prompt": prompt,
-            "stream": True
+            "stream": False
         }
 
         json_data = json.dumps(data)
-        response = requests.post(self.url, data=json_data, headers={'Content-Type': 'application/json'}, stream=True)
-
-        partial_response = ""
-        for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
-                chunk_data = json.loads(chunk.decode('utf-8'))
-                if "response" in chunk_data:
-                    partial_response += chunk_data["response"]
-                    if stop_token in partial_response:
-                        break
-                if chunk_data.get("done"):
-                    break
-        
-        if partial_response == "":
-            raise ValueError
-
-        return partial_response
+        response = requests.post(self.url, data=json_data, headers={'Content-Type': 'application/json'}, stream=False)
+        #
+        # partial_response = ""
+        # for chunk in response.iter_content(chunk_size=1024):
+        #     if chunk:
+        #         chunk_data = json.loads(chunk.decode('utf-8'))
+        #         if "response" in chunk_data:
+        #             partial_response += chunk_data["response"]
+        #             if stop_token in partial_response:
+        #                 break
+        #         if chunk_data.get("done"):
+        #             break
+        # 
+        # if partial_response == "":
+        #     raise ValueError
+        #
+        # return partial_response
+        # 
+        return response.json()["response"]
 
 if __name__ == "__main__":
     llm = LLM("phi3:latest")

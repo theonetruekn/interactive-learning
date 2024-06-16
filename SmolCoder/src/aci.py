@@ -16,6 +16,7 @@ class AgentComputerInterface:
         self.cwd = cwd
         self.tools = tools
         self.search_mode:SearchMode = SearchMode.EXACT
+        self.finished = False
 
     def _generate_cwd_information(self) -> str:
         return f"(Current Working Directory: {self.cwd}"
@@ -55,6 +56,9 @@ class AgentComputerInterface:
             new_dir = input_variables[0]
             return self._change_cwd(new_dir)
         else:
+            if tool_name == "Finish":
+                self.finished = True
+
             tool = self.tools.find_tool(tool_name)
             assert (tool is not None), "No tool was found" # TODO: Maybe add some stuff about "you can use fuzzy search too"
             obs = tool(input_variables, cwd=self.cwd)
