@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 from SmolCoder.src.llm_wrapper import LLM
-from SmolCoder.src.agent import Token
 from SmolCoder.src.toolkit import Toolkit
 
 class PromptingStrategy(ABC):

@@ -10,7 +10,7 @@ class ReplaceMethod(Tool):
         return "Replace_Method"
     
     @property 
-    def example():
+    def example(self):
         raise NotImplementedError
 
     @property
