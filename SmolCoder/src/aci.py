@@ -19,7 +19,7 @@ class AgentComputerInterface:
         self.finished = False
 
     def _generate_cwd_information(self) -> str:
-        return f"(Current Working Directory: {self.cwd}"
+        return f"(Current Working Directory: {str(self.cwd)}"
     
     def _tokenize(self, action_sequence: str) -> Tuple[str, List[str]]:
         action_sequence = action_sequence.replace("Action:", "").strip()
@@ -46,7 +46,7 @@ class AgentComputerInterface:
         if path.exists():
             if path.is_dir():
                 self.cwd = path
-                return f"Set the current working directory to {self.cwd}"
+                return f"Set the current working directory to {str(self.cwd)}"
             else:
                 return f"Could not change the current working directory to {new_dir}, as it is a file, not a directory."
         else:
@@ -65,5 +65,5 @@ class AgentComputerInterface:
             assert (tool is not None), "No tool was found" # TODO: Maybe add some stuff about "you can use fuzzy search too"
             assert (tool.number_of_input_variables() == len(input_variables))
             obs = tool(input_variables, cwd=self.cwd)
-            obs += f"\n{self._generate_cwd_information}\n"
+            obs += f"\n{self._generate_cwd_information()}\n"
             return obs
