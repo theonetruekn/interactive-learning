@@ -16,7 +16,7 @@ class GetClassSummary(Tool):
 
     @property
     def desc(self) -> str:
-        return "Returns a formatted string of methods heads from the class specified in `class_name`."
+        return "returns a formatted string of methods heads from the class specified in `class_name`."
    
     @property 
     def example(self):
