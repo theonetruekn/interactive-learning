@@ -21,10 +21,10 @@ class GetClassDocstrings(Tool):
     def desc(self) -> str:
         return "lists all the class names and their docstring comments in the specified Python file."
 
-    def __call__(self, input_variables: List[str], cwd:Path):
+    def __call__(self, input_variables: List[str], cwd: Path) -> str:
         file_name = input_variables[0]
         
-        #TODO assert file_name exists
+        #TODO: Assert file_name exists
         file_path = cwd / file_name
         
         if not file_path.exists():
@@ -45,11 +45,15 @@ class GetClassDocstrings(Tool):
                     class_name = node.name
                     docstring = ast.get_docstring(node)
                     if not docstring:
-                        docstring =  "No docstring provided"
+                        docstring = "No docstring provided"
 
                     class_entries.append((class_name, docstring))
             
-            return class_entries
+            if class_entries:
+                result = ", ".join([f"`{name}` with docstring `{doc}`" for name, doc in class_entries])
+                return f"The classes in {file_name} are {result}."
+            else:
+                return f"There are no classes in file {file_name}."
         
         except PermissionError:
             return f'Permission denied: Unable to access the file: {file_path}'
