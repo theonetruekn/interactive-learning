@@ -1,8 +1,5 @@
 import os
 import pytest
-import importlib.util
-import inspect
-from unittest.mock import patch, mock_open, MagicMock
 
 from pathlib import Path 
 import sys 
@@ -13,10 +10,10 @@ import SmolCoder.src.tools.list_classes as im_list_classes
 
 def test_list_class_summary():
     root = os.path.join(os.path.dirname(__file__), '../test_codebase')
-    tool = im_list_classes.GetClassDocstrings(root)
+    tool = im_list_classes.GetClassDocstrings()
 
     # Call the __call__ method
-    result = tool("test.py")
+    result = tool(["test.py"], cwd=Path(root))
 
     expected_output = [('MyClass', 'Class Docstring'), ('MyClass2', 'Another class Docstring')]
     print(result)

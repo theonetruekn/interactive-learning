@@ -12,7 +12,7 @@ sys.path.append(str(path_root))
 import SmolCoder.src.tools.list_files as im_list_files
 
 def test_list_class_summary():
-    root = os.path.join(os.path.dirname(__file__), '../test_codebase')
+    root = Path(os.path.join(os.path.dirname(__file__), '../test_codebase'))
     tool = im_list_files.ListFiles()
 
     # Call the __call__ method

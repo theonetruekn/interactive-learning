@@ -30,5 +30,5 @@ class Tool(ABC):
         return len(self.input_variables)
     
     @abstractmethod
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def __call__(self, input_variables:List[str], *args: Any, **kwds: Any) -> str:
         pass

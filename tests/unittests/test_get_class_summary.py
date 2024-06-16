@@ -15,8 +15,7 @@ def test_get_class_summary():
     tool = im_class_summary.GetClassSummary()
     root = os.path.join(os.path.dirname(__file__), '../test_codebase')
 
-    # Call the __call__ method
-    result = tool("MyClass", root)
+    result = tool(["MyClass"], root)
 
     expected_output = (
         "def __init__(self, one: str, two: int):\n"
@@ -31,4 +30,4 @@ def test_get_class_summary():
     assert result == expected_output
 
 if __name__ == "__main__":
-    pytest.main()v
+    pytest.main()
