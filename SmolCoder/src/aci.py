@@ -22,17 +22,20 @@ class AgentComputerInterface:
         return f"(Current Working Directory: {self.cwd}"
     
     def _tokenize(self, action_sequence: str) -> Tuple[str, List[str]]:
-        if '[' in action_sequence and ']' in action_sequence:
-            match = re.match(r'(\w+)\[(.*)\]', action_sequence)
-            if match:
-                tool_name = match.group(1)
-                args = match.group(2).split(', ')
-                return tool_name, args
+        action_sequence = action_sequence.replace("Action:", "").strip()
+        
+        match = re.match(r'(\w+.*)\[(.*)\]', action_sequence)
+        if match:
+            tool_name = match.group(1).strip()
+            args = match.group(2).split(', ')
+            print(f"Toolname: {tool_name}, Args: {args}")
+            return tool_name, args
         else:
             parts = action_sequence.split()
             if len(parts) > 1:
-                tool_name = parts[0]
+                tool_name = parts[0].strip()
                 args = parts[1:]
+                print(f"Toolname: {tool_name}, Args: {args}")
                 return tool_name, args
 
         raise ValueError("Input string does not match the required format.")
@@ -58,9 +61,9 @@ class AgentComputerInterface:
         else:
             if tool_name == "Finish":
                 self.finished = True
-
             tool = self.tools.find_tool(tool_name)
             assert (tool is not None), "No tool was found" # TODO: Maybe add some stuff about "you can use fuzzy search too"
+            assert (tool.number_of_input_variables() == len(input_variables))
             obs = tool(input_variables, cwd=self.cwd)
             obs += f"\n{self._generate_cwd_information}\n"
             return obs
