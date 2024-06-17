@@ -1,21 +1,20 @@
-import re
+import logging
 
-from enum import Enum
 from pathlib import Path
+
+log_file = Path('smolcoder.log')
+logging.basicConfig(filename=log_file, filemode='a', level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger(__name__)
+
+import re
 from typing import Optional
 
 from SmolCoder.src.prompting_strategy import PromptingStrategy
 from SmolCoder.src.aci import AgentComputerInterface
 from SmolCoder.src.llm_wrapper import LLM
 from SmolCoder.src.toolkit import Toolkit
-
-class Token(Enum):
-    SYSPROMPT = "SYSPROMPT"
-    QUESTION = "QUESTION"
-    ACTION = "ACTION"
-    THOUGHT = "THOUGHT"
-    OBSERVATION = "OBSERVATION"
-
 
 class SmolCoder:
     """
@@ -25,12 +24,18 @@ class SmolCoder:
         self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit)
         self.prompting_strategy = PromptingStrategy.create(model, strategy=prompting_strategy, toolkit=toolkit)
         self._history = []
+
+        logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
+                     model, codebase_dir, toolkit, prompting_strategy)
     
     def _get_last_action(self, trajectory: str) -> str:
         matches = re.findall(r"Action:.*", trajectory)
         if matches:
-            return matches[-1]
+            last_action = matches[-1]
+            logger.debug("Extracted last action: %s", last_action)
+            return last_action
         else:
+            logger.error("Couldn't extract an Action from trajectory: %s", trajectory)
             raise ValueError("Couldn't extract an Action")
     
     def inspect_history(self, n:Optional[int] = None) -> str:
@@ -40,8 +45,10 @@ class SmolCoder:
             return str(self._history[-n:])
 
     def __call__(self, userprompt: str, max_calls:int = 10) -> str:
+        logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
         trajectory = ""
         for i in range(max_calls):
+            logger.debug("Call iteration: %d", i)
             if i == 0:
                 trajectory = self.prompting_strategy(prompt=userprompt, begin=True)
             else:
@@ -49,13 +56,18 @@ class SmolCoder:
 
             self._history.append(trajectory)
 
-            action_sequence = self._get_last_action(trajectory)
-            obs = self.ACI.get_observation(action_sequence)
-            trajectory += obs
+            try:
+                action_sequence = self._get_last_action(trajectory)
+                obs = self.ACI.get_observation(action_sequence)
+                trajectory += obs
 
-            self._history.append(trajectory)
+                self._history.append(trajectory)
 
-            if self.ACI.finished:
-                break
+                if self.ACI.finished:
+                    break
+            except Exception as e:
+                logger.exception("Exception occurred during SmolCoder call: %s", e)
+                raise
 
+        logger.info("Final trajectory: %s", trajectory)
         return trajectory
