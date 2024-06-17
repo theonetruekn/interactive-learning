@@ -63,5 +63,5 @@ until Action is of type Finish.
 ---
 
 Question:  Which are the methods in MyClass?"""
-    response = llm.query_completion(prompt)
+    response = llm.query_completion(prompt, stop_token="Observation")
     print(response)
