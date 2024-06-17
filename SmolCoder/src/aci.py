@@ -19,7 +19,7 @@ class AgentComputerInterface:
         self.finished = False
 
     def _generate_cwd_information(self) -> str:
-        return f"(Current Working Directory: {str(self.cwd)}"
+        return f"(Current Working Directory: {str(self.cwd)})"
     
     def _tokenize(self, action_sequence: str) -> Tuple[str, List[str]]:
         action_sequence = action_sequence.replace("Action:", "").strip()
@@ -28,6 +28,9 @@ class AgentComputerInterface:
         if match:
             tool_name = match.group(1).strip()
             args = match.group(2).split(', ')
+            
+            if tool_name.lower() == "finish":
+                args = [match.group(2)]
             print(f"Toolname: {tool_name}, Args: {args}")
             return tool_name, args
         else:
@@ -57,7 +60,6 @@ class AgentComputerInterface:
             tool_name, input_variables = self._tokenize(action_sequence)
         except ValueError as e:
             return str(e)
-        
 
         tool_name, input_variables = self._tokenize(action_sequence)
         if tool_name == "Move_to_Folder":
