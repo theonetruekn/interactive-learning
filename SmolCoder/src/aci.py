@@ -38,8 +38,7 @@ class AgentComputerInterface:
                 print(f"Toolname: {tool_name}, Args: {args}")
                 return tool_name, args
 
-        # raise ValueError("Input string does not match the required format.")
-        return "The Tool does not match the required format: tool_name[input_variable]."
+        raise ValueError("The Tool does not match the required format: tool_name[input_variable_1,...,input_variable_n].")
 
     def _change_cwd(self, new_dir:str) -> str:        
         path = Path(new_dir)
@@ -54,6 +53,12 @@ class AgentComputerInterface:
             return f"Could not change the current working directory to {new_dir}, as it does not exist."
 
     def get_observation(self, action_sequence: str) -> str:
+        try:
+            tool_name, input_variables = self._tokenize(action_sequence)
+        except ValueError as e:
+            return str(e)
+        
+
         tool_name, input_variables = self._tokenize(action_sequence)
         if tool_name == "Move_to_Folder":
             assert len(input_variables) == 1, f"Input variables for `Move_to_Folder` are not of length 1: {input_variables}"
