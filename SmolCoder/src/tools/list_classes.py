@@ -8,10 +8,6 @@ class GetClassDocstrings(Tool):
     @property
     def name(self) -> str:
         return "List_Classes"
-    
-    @property 
-    def example(self):
-        raise NotImplementedError
 
     @property
     def input_variables(self) -> List[str]:
@@ -20,6 +16,10 @@ class GetClassDocstrings(Tool):
     @property
     def desc(self) -> str:
         return "lists all the class names and their docstring comments in the specified Python file."
+    
+    @property 
+    def example(self):
+        return f"{self.name}[test.py]"
 
     def __call__(self, input_variables: List[str], cwd: Path) -> str:
         file_name = input_variables[0]

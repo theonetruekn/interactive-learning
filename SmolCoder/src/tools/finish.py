@@ -16,7 +16,7 @@ class Finish(Tool):
 
     @property
     def example(self) -> str:
-        raise NotImplementedError
+        return f'{self.name}["The Answer is 42."]'
     
     @property
     def short_desc(self) -> str:

@@ -7,10 +7,6 @@ class ListFiles(Tool):
     @property
     def name(self) -> str:
         return "List_Files"
-    
-    @property 
-    def example(self):
-        raise NotImplementedError
 
     @property
     def input_variables(self) -> List[str]:
@@ -19,6 +15,10 @@ class ListFiles(Tool):
     @property
     def desc(self) -> str:
         return "lists all the files and subfolder that are in the folder."
+    
+    @property 
+    def example(self):
+        return f"{self.name}[some_dir]"
 
     def __call__(self, input_variables: List[str], cwd: Path) -> str:
         try:

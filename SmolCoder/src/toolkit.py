@@ -26,14 +26,8 @@ class Toolkit:
             return None
 
     def pretty_print_tools(self) -> str:
-        try:
             return "\n".join(
-            f"({i}) {tool.short_desc}, which {tool.desc}" #FIXME: Example use: {tool.example}
-            for i, (_, tool) in enumerate(self._tools.items(), start=1))
-        except NotImplementedError:
-            print("Example function, not implemented")
-            return "\n".join(
-            f"({i}) {tool.short_desc}, which {tool.desc}."
+            f"({i}) {tool.short_desc}, which {tool.desc} Example use: {tool.example}"
             for i, (_, tool) in enumerate(self._tools.items(), start=1))
 
     def print_tool_short_descs(self) -> str:

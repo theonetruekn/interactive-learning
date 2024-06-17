@@ -20,7 +20,7 @@ class GetClassSummary(Tool):
    
     @property 
     def example(self):
-        raise NotImplementedError
+        return f'{self.name}[MyClass]'
 
     def __call__(self, input_variables:List[str], cwd):
         class_name = input_variables[0]
