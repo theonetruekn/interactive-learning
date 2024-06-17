@@ -38,7 +38,8 @@ class AgentComputerInterface:
                 print(f"Toolname: {tool_name}, Args: {args}")
                 return tool_name, args
 
-        raise ValueError("Input string does not match the required format.")
+        # raise ValueError("Input string does not match the required format.")
+        return "The Tool does not match the required format: tool_name[input_variable]."
 
     def _change_cwd(self, new_dir:str) -> str:        
         path = Path(new_dir)
@@ -62,8 +63,10 @@ class AgentComputerInterface:
             if tool_name == "Finish":
                 self.finished = True
             tool = self.tools.find_tool(tool_name)
-            assert (tool is not None), "No tool was found" # TODO: Maybe add some stuff about "you can use fuzzy search too"
-            assert (tool.number_of_input_variables() == len(input_variables))
+            if (tool is None):
+                return "No tool was found" # TODO: Maybe add some stuff about "you can use fuzzy search too"
+            if (tool.number_of_input_variables() != len(input_variables)):
+                return "The tool expected " + str(tool.number_of_input_variables) + ", but it got " + str(len(input_variables))
             obs = tool(input_variables, cwd=self.cwd)
             obs += f"\n{self._generate_cwd_information()}\n"
             return obs

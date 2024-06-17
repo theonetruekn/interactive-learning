@@ -20,18 +20,23 @@ class ListFiles(Tool):
     def desc(self) -> str:
         return "lists all the files and subfolder that are in the folder."
 
-    def __call__(self, folder:Path):
-        folder_path = Path(folder)
-    
-        if not folder_path.exists():
+    def __call__(self, folder:Path, cwd: Path):
+        try:
+            folder_path = Path(folder)
+
+            full_path = os.path.join(cwd, folder_path)
+        except Exception as e:
+            return "Something went wrong, when parsing the path to the folder location: " + str(e)
+
+        if not full_path.exists():
             return f'The specified folder does not exist: {folder_path}'
     
-        if not folder_path.is_dir():
+        if not full_path.is_dir():
             return f'The specified path is not a folder: {folder_path}'
     
         try:
             entries = []
-            for entry in folder_path.iterdir():
+            for entry in full_path.iterdir():
                 entry_type = 'folder' if entry.is_dir() else 'file'
                 entries.append((entry.name, entry_type))
             return entries

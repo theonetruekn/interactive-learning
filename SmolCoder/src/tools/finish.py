@@ -12,7 +12,7 @@ class Finish(Tool):
 
     @property
     def desc(self) -> str:
-        return "finishes the program"
+        return "finishes the program."
 
     @property
     def example(self) -> str:
@@ -22,5 +22,5 @@ class Finish(Tool):
     def short_desc(self) -> str:
         return f'{self.name}[{",".join(self.input_variables)}]'
     
-    def __call__(self, answer: str) -> Any:
+    def __call__(self, answer: str, cwd) -> Any:
         return answer

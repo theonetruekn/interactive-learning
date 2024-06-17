@@ -30,13 +30,13 @@ class ReAct(PromptingStrategy):
             "You will be given `question` and you will respond with `answer`.\n\n"
             "To do this, you will interleave Thought, Action, and Observation steps.\n\n"
             "Thought can reason about the current situation.\n" 
-            "Action can be the following types:\n"
+            "Action can be the following types, \n"
         )
 
         sysprompt += self.toolkit.pretty_print_tools()
-
+        sysprompt += "\nInput variables of the tools do not need quotation marks around them."
         sysprompt += (
-            "---\n\n"
+            "\n---\n\n"
             "Follow the following format:\n\n"
             "Thought: Reasoning which action to take to solve the task.\n"
             "Action: Always either "
@@ -61,5 +61,8 @@ class ReAct(PromptingStrategy):
         
         prompt += self.lm.query_completion(prompt, stop_token="Observation")
         
-        print("final prompt with llm response\n" + prompt)
+        print("-------------------------------------------------")
+        print("Curren final prompt with llm response:\n" + prompt)
+        print("-------------------------------------------------")
+       
         return prompt
