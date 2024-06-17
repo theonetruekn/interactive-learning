@@ -71,7 +71,10 @@ class AgentComputerInterface:
             if (tool is None):
                 return "No tool was found" # TODO: Maybe add some stuff about "you can use fuzzy search too"
             if (tool.number_of_input_variables() != len(input_variables)):
-                return "The tool expected " + str(tool.number_of_input_variables) + ", but it got " + str(len(input_variables))
+                return (
+                    f"The tool expected {tool.number_of_input_variables()} parameters, but got {len(input_variables)}.\n"
+                    f"Expected parameters: {tool.input_variables}"
+                    )
             obs = tool(input_variables, cwd=self.cwd)
             obs += f"\n{self._generate_cwd_information()}\n"
             return obs
