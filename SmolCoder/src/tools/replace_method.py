@@ -21,7 +21,8 @@ class ReplaceMethod(Tool):
     def desc(self) -> str:
         return "replaces the specified method `method_name` in the `class_name` with `new_method`."
 
-    def __call__(self, class_name, method_name, new_method, cwd):
+    def __call__(self, input_variables:List[str], cwd) -> str:
+        class_name, method_name, new_method = input_variables[0], input_variables[1], input_variables[2]
         # TODO: Enable this when implemented
         # assert(self._lint(new_method))
         for filename in os.listdir(cwd):
