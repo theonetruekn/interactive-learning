@@ -22,5 +22,5 @@ class Finish(Tool):
     def short_desc(self) -> str:
         return f'{self.name}[{",".join(self.input_variables)}]'
     
-    def __call__(self, answer: str, cwd) -> Any:
-        return answer
+    def __call__(self, input_variables: List[str]) -> str:
+        return input_variables[0]
