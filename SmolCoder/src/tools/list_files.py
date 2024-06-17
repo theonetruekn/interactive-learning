@@ -1,5 +1,3 @@
-import os
-
 from pathlib import Path
 from typing import List
 
@@ -40,7 +38,7 @@ class ListFiles(Tool):
             for entry in full_path.iterdir():
                 entry_suffix = '/' if entry.is_dir() else ''
                 entries.append(f"{entry.name}{entry_suffix}")
-            return f"The entries in {str(cwd)} are:\n" + "\n".join(entries)
+            return f"The entries in {str(full_path)} are:\n" + "\n".join(entries)
         except PermissionError:
             return f'Permission denied: Unable to access the folder: {folder_path}'
         except Exception as e:

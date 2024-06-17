@@ -25,9 +25,6 @@ class ShowMethodBody(Tool):
     def desc(self) -> str:
         return "returns a formatted String of the method body from the specified class and method name in `class_name` and `method_name`."
 
-    def __init__(self):
-        pass
-
     def __call__(self, input_variables: List[str], cwd: str) -> str:
         class_name, method_name = input_variables[0], input_variables[1]
         for root, _, files in os.walk(cwd):
