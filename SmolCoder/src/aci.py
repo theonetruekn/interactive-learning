@@ -31,14 +31,12 @@ class AgentComputerInterface:
             
             if tool_name.lower() == "finish":
                 args = [match.group(2)]
-            print(f"Toolname: {tool_name}, Args: {args}")
             return tool_name, args
         else:
             parts = action_sequence.split()
             if len(parts) > 1:
                 tool_name = parts[0].strip()
                 args = parts[1:]
-                print(f"Toolname: {tool_name}, Args: {args}")
                 return tool_name, args
 
         raise ValueError("The Tool does not match the required format: tool_name[input_variable_1,...,input_variable_n].")
@@ -71,12 +69,14 @@ class AgentComputerInterface:
                 self.finished = True
             tool = self.tools.find_tool(tool_name)
             if (tool is None):
-                return "No tool was found" # TODO: Maybe add some stuff about "you can use fuzzy search too"
-            if (tool.number_of_input_variables() != len(input_variables)):
-                return (
+                obs =  f"No tool was found. Please choose one of the following tools: {self.tools.print_tool_short_descs()}" # TODO: Maybe add some stuff about "you can use fuzzy search too"
+            elif (tool.number_of_input_variables() != len(input_variables)):
+                obs = (
                     f"The tool expected {tool.number_of_input_variables()} parameters, but got {len(input_variables)}.\n"
-                    f"Expected parameters: {tool.input_variables}"
+                    f"The parameters that the tool {tool.name} needs are {tool.input_variables}"
                     )
-            obs = tool(input_variables, cwd=self.cwd)
+            else:
+                obs = tool(input_variables, cwd=self.cwd)
+
             obs += f"\n{self._generate_cwd_information()}\n"
             return obs

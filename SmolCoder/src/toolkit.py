@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from SmolCoder.src.tools.tool import Tool
 
@@ -16,7 +16,6 @@ class Toolkit:
     
     def find_tool(self, query:str, mode:SearchMode=SearchMode.EXACT) -> Optional[Tool]:
         normalized_query = query.lower()
-        print(f"Querying {normalized_query}\n")
         
         if mode == SearchMode.EXACT:
             return self._tools.get(normalized_query)
@@ -32,4 +31,7 @@ class Toolkit:
 
     def print_tool_short_descs(self) -> str:
         return " or ".join([f"{tool.short_desc}" for _, tool in self._tools.items()])
+
+    def get_possible_actions(self) -> Set[str]:
+        return set(self._tools.keys())
         
