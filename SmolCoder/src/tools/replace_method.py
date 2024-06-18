@@ -1,5 +1,6 @@
 import os
 import ast
+from pathlib import Path
 from typing import List
 
 from SmolCoder.src.tools.tool import Tool
@@ -21,7 +22,7 @@ class ReplaceMethod(Tool):
     def desc(self) -> str:
         return "replaces the specified method `method_name` in the `class_name` with `new_method`."
 
-    def __call__(self, input_variables:List[str], cwd) -> str:
+    def __call__(self, input_variables:List[str], cwd:Path) -> str:
         class_name, method_name, new_method = input_variables[0], input_variables[1], input_variables[2]
         # TODO: Enable this when implemented
         # assert(self._lint(new_method))

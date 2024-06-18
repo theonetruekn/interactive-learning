@@ -1,14 +1,15 @@
 import os
 import inspect
 import importlib.util
+from pathlib import Path
 from typing import List
 
 from SmolCoder.src.tools.tool import Tool
 
-class GetClassSummary(Tool):    
+class ListMethods(Tool):    
     @property
     def name(self) -> str:
-        return "Get_Class_Summary"
+        return "List_Methods"
     
     @property
     def input_variables(self) -> List[str]:
@@ -16,13 +17,13 @@ class GetClassSummary(Tool):
 
     @property
     def desc(self) -> str:
-        return "returns a formatted string of methods heads from the class specified in `class_name`."
+        return "lists the signatures and docstring of all the method of the class `class_name`."
    
     @property 
     def example(self):
         return f'{self.name}[MyClass]'
 
-    def __call__(self, input_variables:List[str], cwd):
+    def __call__(self, input_variables:List[str], cwd:Path):
         class_name = input_variables[0]
         formatted_methods = []
 

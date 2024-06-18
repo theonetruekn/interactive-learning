@@ -4,7 +4,7 @@ from typing import List
 
 from SmolCoder.src.tools.tool import Tool
 
-class GetClassDocstrings(Tool):
+class ListClasses(Tool):
     @property
     def name(self) -> str:
         return "List_Classes"
@@ -15,7 +15,7 @@ class GetClassDocstrings(Tool):
 
     @property
     def desc(self) -> str:
-        return "lists all the class names and their docstring comments in the specified Python file."
+        return f"lists all class names and their docstring that are in the Python file {self.input_variables[0]}."
     
     @property 
     def example(self):
@@ -24,8 +24,8 @@ class GetClassDocstrings(Tool):
     def __call__(self, input_variables: List[str], cwd: Path) -> str:
         file_name = input_variables[0]
         
-        #TODO: Assert file_name exists
         file_path = cwd / file_name
+        assert file_path.exists(), f"File {file_name} does not exist in the directory {cwd}. Perhaps I should list the files in this directory." #TODO: 
         
         if not file_path.exists():
             return f'The specified file does not exist: {file_path}'
