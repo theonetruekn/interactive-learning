@@ -19,21 +19,26 @@ class PromptingStrategy(ABC):
         pass
     
     @staticmethod
-    def create(model:LLM, toolkit:Toolkit, strategy="ReAct"):
+    def create(model:LLM, toolkit:Toolkit, strategy="ReAct", gihub_issue_mode:bool = False):
         if strategy == "ReAct":
-            return ReAct(name=strategy, lm=model, toolkit=toolkit)
+            return ReAct(name=strategy, lm=model, toolkit=toolkit, gihub_issue_mode=gihub_issue_mode)
         else:
             raise ValueError
 
 class ReAct(PromptingStrategy):
 
-    def __init__(self, name:str, lm: LLM, toolkit:Toolkit) -> None:
+    def __init__(self, name:str, lm: LLM, toolkit:Toolkit, gihub_issue_mode:bool = False) -> None:
         super().__init__(name, lm, toolkit)
+        self._github_issue_mode = gihub_issue_mode 
         self._sysprompt = self._build_sysprompt()
 
     def _build_sysprompt(self) -> str:
-        sysprompt = (
-            "You will be given `question` and you will respond with `answer`.\n\n"
+        if self._github_issue_mode:
+            prompt = "You will be given a description of a `github issue` and your task is, to solve this issue with the available tools.\n\n"
+        else: 
+            prompt = "You will be given `question` and you will respond with `answer`.\n\n"
+
+        sysprompt = prompt + (
             "To do this, you will interleave Thought, Action, and Observation steps.\n\n"
             "Thought can reason about the current situation.\n" 
             "Action can be the following types, \n"

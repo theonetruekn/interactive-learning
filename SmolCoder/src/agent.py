@@ -23,9 +23,13 @@ class SmolCoder:
     """
     This class handles the communication between the prompting strategy and the agent-computer-interface.
     """
-    def __init__(self, model:LLM, codebase_dir:Path, toolkit:Toolkit, prompting_strategy:str = "ReAct") -> None:
+    def __init__(self, model:LLM, codebase_dir:Path, toolkit:Toolkit, prompting_strategy:str = "ReAct", gihub_issue_mode:bool = False) -> None:
         self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit)
-        self.prompting_strategy = PromptingStrategy.create(model, strategy=prompting_strategy, toolkit=toolkit)
+        self.prompting_strategy = PromptingStrategy.create(model, 
+                                                           strategy=prompting_strategy, 
+                                                           toolkit=toolkit, 
+                                                           gihub_issue_mode=gihub_issue_mode
+                                                           )
         self._history = []
 
         logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
@@ -54,7 +58,10 @@ class SmolCoder:
 
         return result 
 
-    def __call__(self, userprompt: str, max_calls:int = 10) -> str:
+    def __call__(self, userprompt: str, max_calls:int = 10, start_cwd: str = "") -> str:
+        if start_cwd != "":
+            self.ACI._change_cwd(start_cwd)
+
         logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
         trajectory = ""
         for i in range(max_calls):
