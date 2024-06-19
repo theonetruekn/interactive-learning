@@ -2,7 +2,7 @@ import re
 import difflib
 
 from abc import ABC
-from typing import List
+from typing import List, Union
 
 from SmolCoder.src.prompting_strategy import PromptingStrategy
 from SmolCoder.src.toolkit import Toolkit
@@ -48,35 +48,31 @@ class MetaTokenizer:
     def tokenize(self, trajectory: str) -> List[MetaToken]:
         token_stream = []
 
+        # Match SysPrompt Token
         sys_prompt_length = len(self.sysprompt_token.content)
         expected_sysprompt = self.sysprompt_token.content
-        actual_sysprompt = trajectory[:sys_prompt_length]
-        if not trajectory.startswith(expected_sysprompt):
-            diff = '\n'.join(difflib.unified_diff(
-                expected_sysprompt.splitlines(), 
-                actual_sysprompt.splitlines(),
-                fromfile='expected', 
-                tofile='actual',
-                lineterm=''
-            ))
-            raise ValueError(f"Trajectory does not start with the expected SysPrompt content. Difference:\n{diff}")
+        if trajectory.startswith(expected_sysprompt):
+            token_stream.append(self.sysprompt_token)
+            trajectory = trajectory[sys_prompt_length:].strip()
 
-        token_stream.append(self.sysprompt_token)
-        trajectory = trajectory[sys_prompt_length:].strip()
+        # Match Question token
+        if trajectory.startswith("Question:"):
+            question_end = trajectory.find("Thought:")
+            if question_end != -1:
+                question_content = trajectory[len("Question:"):question_end].strip()
+                token_stream.append(Question(content=question_content))
+                trajectory = trajectory[question_end:].strip()
+            else:
+                question_content = trajectory[len("Question:"):].strip()
+                token_stream.append(Question(content=question_content))
+                return token_stream
 
-        thought_start = trajectory.find("Thought:")
-        if thought_start == -1:
-            raise ValueError("Trajectory must contain a Thought token after Question.")
-        question_content = trajectory[:thought_start].strip()
-        if question_content.startswith("Question:"):
-            question_content = question_content[len("Question:"):].strip()
-        token_stream.append(Question(content=question_content))
-        trajectory = trajectory[thought_start:].strip()
+        # Patterns for matching Thought, Action, and Observation tokens
+        thought_pattern = re.compile(r"Thought: (.+?)(?=(Action:|Observation:|Thought:|$))", re.DOTALL)
+        action_pattern = re.compile(r"Action: ([\w_]+\[(.*?)\])(?=(Observation:|Thought:|Action:|$))", re.DOTALL)
+        observation_pattern = re.compile(r"Observation: (.+?)(?=(Thought:|Action:|Observation:|$))", re.DOTALL)
 
-        thought_pattern = re.compile(r"Thought: (.+?)(?=Action:|$)", re.DOTALL)
-        action_pattern = re.compile(r"Action: ([\w_]+\[(.*?)\])(?=\nObservation:|$)", re.DOTALL)
-        observation_pattern = re.compile(r"Observation: (.+?)(?=Thought:|$)", re.DOTALL)
-
+        # Loop to match Thought, Action, and Observation tokens
         while trajectory:
             if trajectory.startswith("Thought:"):
                 match = thought_pattern.match(trajectory)
@@ -111,3 +107,62 @@ class MetaTokenizer:
                 break
 
         return token_stream
+    
+    def is_valid_traj(self, traj: Union[str, List[MetaToken]]) -> bool:
+        if isinstance(traj, str):
+            token_stream = self.tokenize(traj)
+        else:
+            token_stream = traj
+
+        if not token_stream:
+            return False
+
+        if not isinstance(token_stream[0], SysPrompt):
+            return False
+
+        if len(token_stream) < 2 or not isinstance(token_stream[1], Question):
+            return False
+
+        index = 2
+        while index < len(token_stream):
+            if index >= len(token_stream) or not isinstance(token_stream[index], Thought):
+                return False
+            index += 1
+
+            if index >= len(token_stream) or not isinstance(token_stream[index], Action):
+                return False
+            index += 1
+
+            if index >= len(token_stream) or not isinstance(token_stream[index], Observations):
+                return False
+            index += 1
+
+        return True
+
+    def unparse(self, token_stream: List[MetaToken]) -> str:
+        if not token_stream:
+            return ""
+        
+        trajectory = []
+        initial_content = []
+
+        for token in token_stream:
+            if isinstance(token, SysPrompt):
+                initial_content.append(token.content)
+            elif isinstance(token, Question):
+                initial_content.append(token.content)
+            else:
+                break
+
+        trajectory.append(" ".join(initial_content))
+
+        for token in token_stream[len(initial_content):]:
+            if isinstance(token, Thought):
+                trajectory.append(f"Thought: {token.content}")
+            elif isinstance(token, Action):
+                input_vars = ", ".join(token.input_variables)
+                trajectory.append(f"Action: {token.tool_name}[{input_vars}]")
+            elif isinstance(token, Observations):
+                trajectory.append(f"Observation: {token.content}")
+
+        return "\n".join(trajectory)
