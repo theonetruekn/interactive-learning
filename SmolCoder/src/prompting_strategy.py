@@ -56,7 +56,6 @@ class ReAct(PromptingStrategy):
             "...\n"
             "until Action is of type `Finish`.\n\n"
             "---\n\n"
-            "Question: "
         )
 
         return sysprompt
