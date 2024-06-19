@@ -1,12 +1,7 @@
 import logging
 
 from pathlib import Path
-
-log_file = Path('smolcoder.log')
-logging.basicConfig(filename=log_file, filemode='a', level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-logger = logging.getLogger(__name__)
+from typing import List 
 
 import re
 from typing import Optional
@@ -15,6 +10,14 @@ from SmolCoder.src.prompting_strategy import PromptingStrategy
 from SmolCoder.src.aci import AgentComputerInterface
 from SmolCoder.src.llm_wrapper import LLM
 from SmolCoder.src.toolkit import Toolkit
+
+
+log_file = Path('smolcoder.log')
+logging.basicConfig(filename=log_file, filemode='a', level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger(__name__)
+
 
 class SmolCoder:
     """
@@ -40,9 +43,16 @@ class SmolCoder:
     
     def inspect_history(self, n:Optional[int] = None) -> str:
         if not n:
-            return str(self._history)
+            return self._format_history(self._history)
         else:
-            return str(self._history[-n:])
+            return self._format_history(self._history[-n:])
+    
+    def _format_history(self, history_input: List[str]) -> str:
+        result = ""
+        for item in history_input:
+            result += item 
+
+        return result 
 
     def __call__(self, userprompt: str, max_calls:int = 10) -> str:
         logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
@@ -58,13 +68,14 @@ class SmolCoder:
 
             try:
                 action_sequence = self._get_last_action(trajectory)
-                obs = self.ACI.get_observation(action_sequence)
-                trajectory += obs
+                obs, cwd_msg = self.ACI.get_observation(action_sequence)
+                trajectory += obs + cwd_msg 
 
                 self._history.append(trajectory)
 
                 if self.ACI.finished:
-                    break
+                    return obs
+
             except Exception as e:
                 logger.exception("Exception occurred during SmolCoder call: %s", e)
                 raise

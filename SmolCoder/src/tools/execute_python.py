@@ -25,7 +25,7 @@ class ExecutePythonCode(Tool):
     def example(self) -> str:
         raise NotImplementedError
 
-    def __call__(self, python_code: str) -> Any:
+    def __call__(self, python_code: str, cwd: str) -> Any:
         """"
         Executes a string of Python code.
 
