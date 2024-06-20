@@ -27,6 +27,10 @@ class PromptingStrategy(ABC):
 
 class ReAct(PromptingStrategy):
 
+    THOUGHT_TOKEN = "Thought:"
+    ACTION_TOKEN = "Action:"
+    OBSERVATION_TOKEN = "Observation:"
+
     def __init__(self, name:str, lm: LLM, toolkit:Toolkit) -> None:
         super().__init__(name, lm, toolkit)
         self._sysprompt = self._build_sysprompt()
@@ -44,15 +48,15 @@ class ReAct(PromptingStrategy):
         sysprompt += (
             "\n---\n\n"
             "Follow the following format:\n\n"
-            "Thought: Reasoning which action to take to solve the task.\n"
-            "Action: Always either "
+            f"{self.THOUGHT_TOKEN} Reasoning which action to take to solve the task.\n"
+            f"{self.ACTION_TOKEN} Always either "
         )
 
         sysprompt += self.toolkit.print_tool_short_descs()
 
         sysprompt += (
-            "\nObservation: result of the previous Action\n"
-            "Thought: next steps to take based on the previous Observation\n"
+            f"\n{self.OBSERVATION_TOKEN} result of the previous Action\n"
+            f"{self.THOUGHT_TOKEN} next steps to take based on the previous Observation\n"
             "...\n"
             "until Action is of type `Finish`.\n\n"
             "---\n\n"
@@ -64,6 +68,6 @@ class ReAct(PromptingStrategy):
         if begin:
             prompt = self.sysprompt + prompt + "\n"
         
-        prompt += self.lm.query_completion(prompt, stop_token="Observation: ")
+        prompt += self.lm.query_completion(prompt, stop_token=self.OBSERVATION_TOKEN)
        
         return prompt
