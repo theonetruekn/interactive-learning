@@ -57,6 +57,7 @@ class SmolCoder:
             self._history.append(trajectory)
 
             try:
+                #TODO: add tokenizer here
                 action_sequence = self._get_last_action(trajectory)
                 obs = self.ACI.get_observation(action_sequence)
                 trajectory += obs
