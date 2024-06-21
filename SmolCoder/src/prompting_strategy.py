@@ -69,5 +69,6 @@ class ReAct(PromptingStrategy):
             prompt = self.sysprompt + prompt + "\n"
         
         prompt += self.lm.query_completion(prompt, stop_token=self.OBSERVATION_TOKEN)
+        prompt += " " #adds whitespace after "Observation:"
        
         return prompt

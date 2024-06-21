@@ -1,9 +1,7 @@
 # Agent-Computer Interface
 # Manages tool use and augments prompts with auxiliary information, such as the current working directory
 
-import re
-
-from typing import List, Tuple
+from typing import List
 from pathlib import Path
 
 from SmolCoder.src.toolkit import SearchMode, Toolkit
@@ -20,26 +18,6 @@ class AgentComputerInterface:
 
     def _generate_cwd_information(self) -> str:
         return f"(Current Working Directory: {str(self.cwd)})"
-    
-    def _tokenize(self, action_sequence: str) -> Tuple[str, List[str]]:
-        action_sequence = action_sequence.replace("Action:", "").strip()
-        
-        match = re.match(r'(\w+.*)\[(.*)\]', action_sequence)
-        if match:
-            tool_name = match.group(1).strip()
-            args = match.group(2).split(', ')
-            
-            if tool_name.lower() == "finish":
-                args = [match.group(2)]
-            return tool_name, args
-        else:
-            parts = action_sequence.split()
-            if len(parts) > 1:
-                tool_name = parts[0].strip()
-                args = parts[1:]
-                return tool_name, args
-
-        raise ValueError("The Tool does not match the required format: tool_name[input_variable_1,...,input_variable_n].")
 
     def _change_cwd(self, new_dir:str) -> str:        
         path = Path(new_dir)
@@ -53,13 +31,7 @@ class AgentComputerInterface:
         else:
             return f"Could not change the current working directory to {new_dir}, as it does not exist."
 
-    def get_observation(self, action_sequence: str) -> str:
-        try:
-            tool_name, input_variables = self._tokenize(action_sequence)
-        except ValueError as e:
-            return str(e)
-
-        tool_name, input_variables = self._tokenize(action_sequence)
+    def get_observation(self, tool_name:str, input_variables: List[str]) -> str:
         if tool_name == "Move_to_Folder":
             assert len(input_variables) == 1, f"Input variables for `Move_to_Folder` are not of length 1: {input_variables}"
             new_dir = input_variables[0]

@@ -1,6 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Tuple, Union
 
 # Importing the necessary classes from the hypothetical external modules
 from SmolCoder.src.prompting_strategy import PromptingStrategy
@@ -88,12 +88,16 @@ class Action(MetaToken):
         input_vars = ", ".join(self.input_variables)
         return f"{ACTION_PREFIX} {self.tool_name}[{input_vars}]"
 
-class Observations(MetaToken):
+    def unpack(self) -> Tuple[str, List[str]]:
+        return self.tool_name, self.input_variables
+
+
+class Observation(MetaToken):
     def __init__(self, content: str) -> None:
         self.content = content
 
     @classmethod
-    def match(cls, text: str) -> Union['Observations', None]:
+    def match(cls, text: str) -> Union['Observation', None]:
         match = re.match(rf"{OBSERVATION_PREFIX} (.+?)(?=({THOUGHT_PREFIX}|{ACTION_PREFIX}|$))", text, re.DOTALL)
         if match:
             return cls(content=match.group(1).strip())
@@ -124,7 +128,7 @@ class MetaTokenizer:
         trajectory = trajectory.replace("\n", "")
 
         while trajectory:
-            for token_class in [Question, Thought, Action, Observations]:
+            for token_class in [Question, Thought, Action, Observation]:
                 token = token_class.match(trajectory)
                 if token:
                     token_stream.append(token)
@@ -147,20 +151,14 @@ class MetaTokenizer:
         if not isinstance(token_stream[0], SysPrompt):
             return False
 
-        if len(token_stream) < 2 or not isinstance(token_stream[1], Question):
+        if len(token_stream) > 1 and not isinstance(token_stream[1], Question):
             return False
 
+        expected_types = [Thought, Action, Observation]
         index = 2
         while index < len(token_stream):
-            if index >= len(token_stream) or not isinstance(token_stream[index], Thought):
-                return False
-            index += 1
-
-            if index >= len(token_stream) or not isinstance(token_stream[index], Action):
-                return False
-            index += 1
-
-            if index >= len(token_stream) or not isinstance(token_stream[index], Observations):
+            expected_type = expected_types[(index - 2) % 3]
+            if not isinstance(token_stream[index], expected_type):
                 return False
             index += 1
 
