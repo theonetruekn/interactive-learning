@@ -20,10 +20,11 @@ class ListFiles(Tool):
     def example(self):
         return f"{self.name}[some_dir]"
 
-    def __call__(self, input_variables: List[str], cwd: Path) -> str:
+    def __call__(self, input_variables: List[str], cwd: Path, logger) -> str:
         try:
             folder_path = Path(input_variables[0])
             full_path = cwd / folder_path
+            logger.debug("ListFiles with the path in: %s", full_path)
         except Exception as e:
             return "Something went wrong when parsing the path to the folder location: " + str(e)
 

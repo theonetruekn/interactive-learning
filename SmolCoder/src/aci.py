@@ -11,12 +11,13 @@ from SmolCoder.src.toolkit import SearchMode, Toolkit
 
 class AgentComputerInterface:
 
-    def __init__(self, cwd:Path, tools:Toolkit) -> None:
+    def __init__(self, cwd:Path, tools:Toolkit, logger) -> None:
         assert(cwd.exists())
         self.cwd = cwd
         self.tools = tools
         self.search_mode:SearchMode = SearchMode.EXACT
         self.finished = False
+        self.logger = logger 
 
     def _generate_cwd_information(self) -> str:
         return f"(Current Working Directory: {str(self.cwd)})"
@@ -76,7 +77,7 @@ class AgentComputerInterface:
                     f"The parameters that the tool {tool.name} needs are {tool.input_variables}"
                     )
             else:
-                obs = self._remove_encapsulating_quotes(tool(input_variables, cwd=self.cwd))
+                obs = self._remove_encapsulating_quotes(tool(input_variables, cwd=self.cwd, logger=self.logger))
 
             cwd_msg = f"\n{self._generate_cwd_information()}\n"
             return obs, cwd_msg 

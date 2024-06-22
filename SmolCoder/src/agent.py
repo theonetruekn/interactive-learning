@@ -24,7 +24,7 @@ class SmolCoder:
     This class handles the communication between the prompting strategy and the agent-computer-interface.
     """
     def __init__(self, model:LLM, codebase_dir:Path, toolkit:Toolkit, prompting_strategy:str = "ReAct", gihub_issue_mode:bool = False) -> None:
-        self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit)
+        self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit, logger=logger)
         self.prompting_strategy = PromptingStrategy.create(model, 
                                                            strategy=prompting_strategy, 
                                                            toolkit=toolkit, 

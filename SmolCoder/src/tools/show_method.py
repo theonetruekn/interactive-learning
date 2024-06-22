@@ -26,7 +26,7 @@ class ShowMethodBody(Tool):
     def desc(self) -> str:
         return "returns a formatted String of the method body from the specified class and method name in `class_name` and `method_name`."
 
-    def __call__(self, input_variables: List[str], cwd: Path) -> str:
+    def __call__(self, input_variables: List[str], cwd: Path, logger) -> str:
         class_name, method_name = input_variables[0], input_variables[1]
         for root, _, files in os.walk(cwd):
             for file in files:
@@ -45,8 +45,10 @@ class ShowMethodBody(Tool):
                         continue
                     
                     if hasattr(module, class_name):
+                        logger.log("Found the correct class %s in the file %s", class_name, str(file_path))
                         class_obj = getattr(module, class_name)
                         if hasattr(class_obj, method_name):
+                            logger.log("Found the correct method %s i nthe current class", method_name)
                             method_obj = getattr(class_obj, method_name)
                             try:
                                 method_source = inspect.getsource(method_obj)

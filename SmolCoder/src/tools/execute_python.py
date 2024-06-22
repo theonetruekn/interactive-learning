@@ -25,7 +25,7 @@ class ExecutePythonCode(Tool):
     def example(self) -> str:
         raise NotImplementedError
 
-    def __call__(self, python_code: str, cwd: str) -> Any:
+    def __call__(self, python_code: str, cwd: str, logger) -> Any:
         """"
         Executes a string of Python code.
 
@@ -36,6 +36,7 @@ class ExecutePythonCode(Tool):
             The output of the executed code, or None if there is no output.
         """
         with open(os.path.join(self.path_to_file, self.filename), "w+") as f:
+            logger.debug("Saving python-code of ExecutePythonTool in the file %s in the location %s", self.filename, self.path_to_file)
             f.write(python_code)
 
         # Create a new namespace for the code to be executed in

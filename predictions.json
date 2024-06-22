@@ -1,0 +1,628 @@
+[
+{
+    "instance_id": "sqlfluff__sqlfluff-4764",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+[
+[
+{
+    "instance_id": "sqlfluff__sqlfluff-4764",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2862",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2336",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-5074",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3436",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2849",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-884",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4151",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3354",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3700",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3608",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3435",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3904",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4753",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4778",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2907",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4051",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-905",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-1625",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2326",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3220",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2419",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3170",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2846",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3662",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4997",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2998",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-1733",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3648",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4043",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2509",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-5206",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-1577",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2386",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3411",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2641",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4777",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-1517",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-880",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4041",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4834",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-5170",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3066",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2625",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-891",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-2573",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3109",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-1763",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-4084",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "sqlfluff__sqlfluff-3330",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "marshmallow-code__marshmallow-1164",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "marshmallow-code__marshmallow-1252",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "marshmallow-code__marshmallow-1359",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "marshmallow-code__marshmallow-1343",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "marshmallow-code__marshmallow-2123",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "marshmallow-code__marshmallow-1229",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "marshmallow-code__marshmallow-1810",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "marshmallow-code__marshmallow-1702",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "marshmallow-code__marshmallow-1524",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1160",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1738",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1782",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1719",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1426",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-807",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1138",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1213",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1707",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1395",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1216",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1191",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-823",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1368",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1448",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1589",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1031",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1349",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-980",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1048",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1623",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1273",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1186",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1822",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1165",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1026",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1616",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1740",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1225",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1093",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1193",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1176",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1157",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1737",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1852",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1469",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1666",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1764",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1478",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1072",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1073",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1181",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1606",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1480",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1682",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1832",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1089",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1033",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-718",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1653",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1854",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1140",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1296",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1739",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1224",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-763",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-907",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1053",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1518",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1239",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1458",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1218",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pvlib__pvlib-python-1154",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pylint-dev__astroid-1741",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
+{
+    "instance_id": "pylint-dev__astroid-1616",
+    "model_patch": "",
+    "model_name_or_path": "SmolCoder"
+},
