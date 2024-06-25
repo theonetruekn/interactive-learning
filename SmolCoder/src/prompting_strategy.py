@@ -45,7 +45,7 @@ class ReAct(PromptingStrategy):
         )
 
         sysprompt += self.toolkit.pretty_print_tools()
-        sysprompt += "\nInput variables of the tools do not need quotation marks around them."
+        sysprompt += "\n Input variables of the tools do not need quotation marks around them. In addition, do NOT use the `finish` tool before having made all changes to remedy the issue."
         sysprompt += (
             "\n---\n\n"
             "Follow the following format:\n\n"
@@ -59,7 +59,7 @@ class ReAct(PromptingStrategy):
             "\nObservation: result of the previous Action\n"
             "Thought: next steps to take based on the previous Observation\n"
             "...\n"
-            "until Action is of type `Finish`.\n\n"
+            "until Action is of type `Finish`. Do not use any special formatation such as markdown.\n\n"
             "---\n\n"
         )
 

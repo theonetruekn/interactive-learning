@@ -12,7 +12,7 @@ class ReplaceMethod(Tool):
     
     @property 
     def example(self):
-        raise NotImplementedError
+        return f"{self.name}[function_name, some_python_code]"
 
     @property
     def input_variables(self) -> List[str]:
