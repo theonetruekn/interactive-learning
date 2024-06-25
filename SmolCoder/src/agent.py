@@ -16,8 +16,11 @@ class SmolCoder:
     """
     This class handles the communication between the prompting strategy and the agent-computer-interface.
     """
-    def __init__(self, model:LLM, codebase_dir:Path, toolkit:Toolkit, prompting_strategy:str = "ReAct", gihub_issue_mode:bool = False) -> None:
-                
+    def __init__(self, model:LLM, codebase_dir:Path, toolkit:Toolkit, prompting_strategy:str = "ReAct", mode:int = 2) -> None:
+        """
+        Args:
+            mode (int): 0 for github_issue_mode, 1 for repoduce_error_mode, 2 for ReAct Mode
+        """
         log_file = Path('smolcoder.log')
         logging.basicConfig(filename=log_file, filemode='a', level=logging.DEBUG,
                             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -27,7 +30,7 @@ class SmolCoder:
         self.prompting_strategy = PromptingStrategy.create(model, 
                                                            strategy=prompting_strategy, 
                                                            toolkit=toolkit, 
-                                                           gihub_issue_mode=gihub_issue_mode
+                                                           mode=mode
                                                            )
         self._history = []
 

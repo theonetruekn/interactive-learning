@@ -19,24 +19,32 @@ class PromptingStrategy(ABC):
         pass
     
     @staticmethod
-    def create(model:LLM, toolkit:Toolkit, strategy="ReAct", gihub_issue_mode:bool = False):
+    def create(model:LLM, toolkit:Toolkit, strategy="ReAct", mode:int = 2):
         if strategy == "ReAct":
-            return ReAct(name=strategy, lm=model, toolkit=toolkit, gihub_issue_mode=gihub_issue_mode)
+            return ReAct(name=strategy, lm=model, toolkit=toolkit, mode=mode)
         else:
             raise ValueError
 
 class ReAct(PromptingStrategy):
 
-    def __init__(self, name:str, lm: LLM, toolkit:Toolkit, gihub_issue_mode:bool = False) -> None:
+    def __init__(self, name:str, lm: LLM, toolkit:Toolkit, mode:int = 2) -> None:
+        """
+        Args:
+            mode (int): 0 for github_issue_mode, 1 for repoduce_error_mode, 2 for ReAct Mode
+        """
         super().__init__(name, lm, toolkit)
-        self._github_issue_mode = gihub_issue_mode 
+        self._mode = mode 
         self._sysprompt = self._build_sysprompt()
 
     def _build_sysprompt(self) -> str:
-        if self._github_issue_mode:
-            prompt = "You will be given a description of a `github issue` and your task is, to solve this issue with the available tools.\n\n"
-        else: 
+        if self._mode == 0:
+            prompt = "You will be given a description of a `github issue` and your task is, to solve this issue, first you should use tools to investiaget the repo to find the sectio where the error occurs and then you should replace this section with the correct code.\n\n"
+        elif self._mode == 1:
+            prompt = "You will be given a description of a `github issue` and your task is, to reproduce this issue by using the available tools to you.\n\n"
+        elif self._mode == 2:
             prompt = "You will be given `question` and you will respond with `answer`.\n\n"
+        else:
+            raise ValueError("The Mode: " + str(self._mode) + " is not a valid mode for ReAct.")
 
         sysprompt = prompt + (
             "To do this, you will interleave Thought, Action, and Observation steps.\n\n"
