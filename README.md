@@ -17,7 +17,7 @@ This project is a work-in-progress.
 - Creating the Coding Agent Framework ✅
 - Definining and programming the Tools that the Agent will use ✅
 - Creating an interface between the Agent and the Computer ✅
-  
+
 - Phi3 as a baseline
 - Phi3 as coding agent
 - Phi3 finetuned on code
@@ -43,8 +43,6 @@ ___
 - [BranchTrainMix](https://arxiv.org/abs/2403.07816)
 ___
 **Misc:**
-- [SWE Agent](https://swe-agent.com)
-- [SWE-Bench](https://www.swebench.com)
 - [DSPy](https://github.com/stanfordnlp/dspy)
 - [MoE](https://huggingface.co/blog/moe)
 - [TorchTune](https://github.com/pytorch/torchtune)
