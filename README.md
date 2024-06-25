@@ -18,8 +18,8 @@ This project is a work-in-progress.
 - Definining and programming the Tools that the Agent will use ✅
 - Creating an interface between the Agent and the Computer ✅
 
-- Evaluating
- - Phi3 as a baseline
+**Evaluating:**
+ - Phi3 out-of-the-box
  - Phi3 as coding agent
  - Phi3 finetuned on code
  - Phi3 as coding agent, finetuned on code/tool-use
