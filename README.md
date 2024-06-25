@@ -1,7 +1,9 @@
 # SmolCoder: An Open Source LLM-based coding agent that works with human interaction (WIP)
  
  > This project was developed as part of the research-lab "Interactive Learning" at the Karlsruhe Institute of Technology (KIT) in the summer of 2024.
-
+<p align="center">
+<img src="https://github.com/theonetruekn/interactive-learning/blob/master/smolcoder.webp?raw=true" width=300 height =300/>
+</p>
 ## Description
 
 The scope of this project is to develop an autonomous coding agent similar to [Devin](https://www.cognition.ai/blog/introducing-devin), [SWE-Agent](https://swe-agent.com/) and [AutoCodeRover](https://github.com/nus-apr/auto-code-rover).
