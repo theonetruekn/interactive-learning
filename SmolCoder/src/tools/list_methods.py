@@ -97,8 +97,11 @@ class ListMethods(Tool):
                     file_path = os.path.join(root, file)
                     functions_info = parse_file(file_path)
                     all_functions.update(functions_info)
-
-        return str(all_functions) 
+        
+        if not bool(all_functions):
+            return "In the current working directory does not exist a class named:" + str(class_name)
+        else:
+            return str(all_functions) 
 
     def _indent(self, text, spaces):
         indent = ' ' * spaces

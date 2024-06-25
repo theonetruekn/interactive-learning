@@ -12,19 +12,18 @@ from SmolCoder.src.llm_wrapper import LLM
 from SmolCoder.src.toolkit import Toolkit
 
 
-log_file = Path('smolcoder.log')
-logging.basicConfig(filename=log_file, filemode='a', level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-logger = logging.getLogger(__name__)
-
-
 class SmolCoder:
     """
     This class handles the communication between the prompting strategy and the agent-computer-interface.
     """
     def __init__(self, model:LLM, codebase_dir:Path, toolkit:Toolkit, prompting_strategy:str = "ReAct", gihub_issue_mode:bool = False) -> None:
-        self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit, logger=logger)
+                
+        log_file = Path('smolcoder.log')
+        logging.basicConfig(filename=log_file, filemode='a', level=logging.DEBUG,
+                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.logger = logging.getLogger(__name__)
+
+        self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit, logger=self.logger)
         self.prompting_strategy = PromptingStrategy.create(model, 
                                                            strategy=prompting_strategy, 
                                                            toolkit=toolkit, 
@@ -32,17 +31,18 @@ class SmolCoder:
                                                            )
         self._history = []
 
-        logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
+        self.logger.debug("-------------------------------------------------------------------------------------------")
+        self.logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
                      model, codebase_dir, toolkit, prompting_strategy)
     
     def _get_last_action(self, trajectory: str) -> str:
         matches = re.findall(r"Action:.*", trajectory)
         if matches:
             last_action = matches[-1]
-            logger.debug("Extracted last action: %s", last_action)
+            self.logger.debug("Extracted last action: %s", last_action)
             return last_action
         else:
-            logger.error("Couldn't extract an Action from trajectory: %s", trajectory)
+            self.logger.error("Couldn't extract an Action from trajectory: %s", trajectory)
             raise ValueError("Couldn't extract an Action")
     
     def inspect_history(self, n:Optional[int] = None) -> str:
@@ -62,10 +62,10 @@ class SmolCoder:
         if start_cwd != "":
             self.ACI._change_cwd(start_cwd)
 
-        logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
+        self.logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
         trajectory = ""
         for i in range(max_calls):
-            logger.debug("Call iteration: %d", i)
+            self.logger.debug("Call iteration: %d", i)
             if i == 0:
                 trajectory = self.prompting_strategy(prompt=userprompt, begin=True)
             else:
@@ -84,8 +84,8 @@ class SmolCoder:
                     return obs
 
             except Exception as e:
-                logger.exception("Exception occurred during SmolCoder call: %s", e)
+                self.logger.exception("Exception occurred during SmolCoder call: %s", e)
                 raise
 
-        logger.info("Final trajectory: %s", trajectory)
+        self.logger.info("Final trajectory: %s", trajectory)
         return trajectory
