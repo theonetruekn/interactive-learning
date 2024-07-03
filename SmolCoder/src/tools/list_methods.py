@@ -1,8 +1,9 @@
 import os
-import inspect
-import importlib.util
+import ast 
+
 from pathlib import Path
 from typing import List
+
 
 from SmolCoder.src.tools.tool import Tool
 
@@ -23,39 +24,82 @@ class ListMethods(Tool):
     def example(self):
         return f'{self.name}[MyClass]'
 
-    def __call__(self, input_variables:List[str], cwd:Path):
+    def __call__(self, input_variables:List[str], cwd:Path, logger):
+        """
+        Extracts function signatures and docstrings from the specified class 
+        found in Python files within the provided directory.
+
+        Parameters:
+        cwd (str): The current working directory to search for Python files.
+        class_name (str): The name of the class to extract information from.
+
+        Returns:
+        dict: A dictionary where keys are function names and values are tuples 
+        containing function signature and docstring.
+        """
         class_name = input_variables[0]
-        formatted_methods = []
+        class FunctionVisitor(ast.NodeVisitor):
+            def __init__(self):
+                self.functions = {}
 
-        for filename in os.listdir(cwd):
-            full_path = os.path.join(cwd, filename)
-            if os.path.isfile(full_path) and full_path.endswith(".py"):
-                module_name = os.path.splitext(filename)[0]
-                spec = importlib.util.spec_from_file_location(module_name, full_path)
-                module = importlib.util.module_from_spec(spec)
-                try:
-                    spec.loader.exec_module(module)
-                except Exception as e:
-                    print(f"Error importing {filename}: {e}")
-                    continue
+            def visit_FunctionDef(self, node):
+                if isinstance(node, ast.FunctionDef):
+                    # Get function name
+                    func_name = node.name
+
+                    # Get function signature
+                    args = [arg.arg for arg in node.args.args]
+                    signature = f"{func_name}({', '.join(args)})"
+
+                    # Get function docstring
+                    docstring = ast.get_docstring(node)
+
+                    # Store in dictionary
+                    self.functions[func_name] = (signature, docstring)
                 
-                if hasattr(module, class_name):
-                    cls = getattr(module, class_name)
-                    if inspect.isclass(cls):
-                        for name, member in inspect.getmembers(cls, inspect.isfunction):
-                            if member.__qualname__.startswith(class_name):
-                                sig = inspect.signature(member)
-                                method_head = f"def {name}{sig}:"
-                                docstring = inspect.getdoc(member) or ""
-                                if docstring:
-                                    indented_docstring = self._indent(docstring, 4)
-                                    docstring = f'    """\n{indented_docstring}\n    """'
-                                formatted_methods.append(f"{method_head}\n{docstring}")
-        
-        if not formatted_methods:
-            return f"There were no methods in the class {class_name}"
+                self.generic_visit(node)
 
-        return "\n\n".join(formatted_methods)
+        class ClassVisitor(ast.NodeVisitor):
+            def __init__(self, target_class_name):
+                self.target_class_name = target_class_name
+                self.function_visitor = FunctionVisitor()
+                self.inside_target_class = False
+
+            def visit_ClassDef(self, node):
+                if node.name == self.target_class_name:
+                    self.inside_target_class = True
+                    self.function_visitor.visit(node)
+                    self.inside_target_class = False
+                else:
+                    self.generic_visit(node)
+
+        def parse_file(file_path):
+            with open(file_path, "r") as source_file:
+                source_code = source_file.read()
+
+            # Parse the source code into an AST
+            tree = ast.parse(source_code)
+
+            # Initialize and run the class visitor
+            class_visitor = ClassVisitor(class_name)
+            class_visitor.visit(tree)
+
+            return class_visitor.function_visitor.functions
+
+        all_functions = {}
+
+        # Walk through the directory and process each Python file
+        for root, _, files in os.walk(cwd):
+            for file in files:
+                if file.endswith(".py"):
+                    file_path = os.path.join(root, file)
+                    functions_info = parse_file(file_path)
+                    all_functions.update(functions_info)
+        
+        if not bool(all_functions):
+            return "In the current working directory does not exist a class named:" + str(class_name)
+        else:
+            return str(all_functions) 
 
     def _indent(self, text, spaces):
         indent = ' ' * spaces

@@ -1,7 +1,7 @@
 # Agent-Computer Interface
 # Manages tool use and augments prompts with auxiliary information, such as the current working directory
 
-from typing import List
+from typing import List, Tuple
 from pathlib import Path
 
 from SmolCoder.src.toolkit import SearchMode, Toolkit
@@ -9,12 +9,13 @@ from SmolCoder.src.toolkit import SearchMode, Toolkit
 
 class AgentComputerInterface:
 
-    def __init__(self, cwd:Path, tools:Toolkit) -> None:
+    def __init__(self, cwd:Path, tools:Toolkit, logger) -> None:
         assert(cwd.exists())
         self.cwd = cwd
         self.tools = tools
         self.search_mode:SearchMode = SearchMode.EXACT
         self.finished = False
+        self.logger = logger 
 
     def _generate_cwd_information(self) -> str:
         return f"(Current Working Directory: {str(self.cwd)})"
@@ -31,11 +32,11 @@ class AgentComputerInterface:
         else:
             return f"Could not change the current working directory to {new_dir}, as it does not exist."
 
-    def get_observation(self, tool_name:str, input_variables: List[str]) -> str:
+    def get_observation(self, tool_name:str, input_variables: List[str]) -> Tuple[str, str]:
         if tool_name == "Move_to_Folder":
             assert len(input_variables) == 1, f"Input variables for `Move_to_Folder` are not of length 1: {input_variables}"
             new_dir = input_variables[0]
-            return self._change_cwd(new_dir)
+            return "", self._change_cwd(new_dir)
         else:
             if tool_name == "Finish":
                 self.finished = True
@@ -48,7 +49,12 @@ class AgentComputerInterface:
                     f"The parameters that the tool {tool.name} needs are {tool.input_variables}"
                     )
             else:
-                obs = tool(input_variables, cwd=self.cwd)
+                obs = self._remove_encapsulating_quotes(tool(input_variables, cwd=self.cwd, logger=self.logger))
 
-            obs += f"\n{self._generate_cwd_information()}\n"
-            return obs
+            cwd_msg = f"\n{self._generate_cwd_information()}\n"
+            return obs, cwd_msg 
+
+    def _remove_encapsulating_quotes(self, s) -> str:
+        if len(s) >= 2 and ((s[0] == '"' and s[-1] == '"') or (s[0] == "'" and s[-1] == "'")):
+            return s[1:-1]
+        return s

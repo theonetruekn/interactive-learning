@@ -20,7 +20,7 @@ class ExecutePythonCode(Tool):
 
     @property
     def example(self) -> str:
-        raise NotImplementedError
+        return f'{self.name}[python_code]'
 
     def __call__(self, input_variables: List[str]) -> str:
         python_code = input_variables[0]

@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import List
-
+import os 
 from SmolCoder.src.tools.tool import Tool
 
 class ListFiles(Tool):
@@ -18,12 +18,15 @@ class ListFiles(Tool):
     
     @property 
     def example(self):
-        return f"{self.name}[some_dir]"
+        return f"{self.name}[some_dir] or {self.name}[.] to list the files of the current directory"
 
-    def __call__(self, input_variables: List[str], cwd: Path) -> str:
+    def __call__(self, input_variables: List[str], cwd: Path, logger) -> str:
         try:
             folder_path = Path(input_variables[0])
-            full_path = cwd / folder_path
+            full_path = Path(os.path.join(cwd, folder_path))
+            
+            if logger is not None: 
+                logger.debug("ListFiles with the path in: %s", full_path)
         except Exception as e:
             return "Something went wrong when parsing the path to the folder location: " + str(e)
 

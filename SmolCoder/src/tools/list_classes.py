@@ -21,11 +21,14 @@ class ListClasses(Tool):
     def example(self):
         return f"{self.name}[test.py]"
 
-    def __call__(self, input_variables: List[str], cwd: Path) -> str:
+    def __call__(self, input_variables: List[str], cwd: Path, logger) -> str:
         file_name = input_variables[0]
         
         file_path = cwd / file_name
-        assert file_path.exists(), f"File {file_name} does not exist in the directory {cwd}. Perhaps I should list the files in this directory." #TODO: 
+        
+        logger.debug("ListClasses in the file %s", file_path)
+
+        #assert file_path.exists(), f"File {file_name} does not exist in the directory {cwd}. Perhaps I should list the files in this directory." #TODO: 
         
         if not file_path.exists():
             return f'The specified file does not exist: {file_path}'
