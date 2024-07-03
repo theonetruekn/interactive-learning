@@ -1,5 +1,6 @@
 import logging
 
+from os import execv
 from pathlib import Path
 
 from SmolCoder.src.meta_tokenizer import Action, MetaToken, MetaTokenizer, Observation
@@ -40,7 +41,13 @@ class SmolCoder:
         else:
             return str(self._history[-n:])
 
-    def __call__(self, userprompt: str, max_calls:int = 10) -> str:
+    def _backtrack_action(self) -> bool:
+        if isinstance(self.token_stream[-1], Action):
+            self.token_stream.pop()
+            return True
+        return False
+
+    def __call__(self, userprompt: str, max_calls: int = 10) -> str:
         """
         Note that the userprompt needs to start with "Question:"
         Also note that the __call__ method right now is tailored for ReAct.
@@ -48,28 +55,43 @@ class SmolCoder:
         """
         logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
         trajectory = ""
+        last_action = None
+
         for i in range(max_calls):
             if i == 0:
                 trajectory = self.prompting_strategy(prompt=userprompt, begin=True)
             else:
                 trajectory = self.prompting_strategy(prompt=trajectory, begin=False)
-                        
+
             print("\n------------\n")
             print(trajectory)
             print("\n------------\n")
+
             self.token_stream = self.meta_tokenizer.tokenize(trajectory)
             assert self.meta_tokenizer.is_valid_traj(trajectory), f"{self.token_stream}"
-
             self._history.append(trajectory)
-            
+
             action = self.token_stream[-1]
-            # check if last token is Action
             assert isinstance(action, Action)
+
+            # If we repeat an action, we backtrack
+            if last_action and action == last_action:
+                logger.warning("Detected repeated action. Attempting backtracking.")
+                print("Detected repeated action.")
+                assert self._backtrack_action()
+
+            last_action = action
             tool_name, input_variables = action.unpack()
-            
-            obs = self.ACI.get_observation(tool_name=tool_name, input_variables=input_variables)
+            # If the tool-use fails, we backtrack
+            # FIXME: We might want to return errors?
+            try:
+                obs = self.ACI.get_observation(tool_name=tool_name, input_variables=input_variables)
+            except Exception as e:
+                logger.error(f"Error during observation: {str(e)}. Attempting backtracking.")
+                assert self._backtrack_action()
+                continue
             trajectory += obs
-            
+
             print("\n------------\n")
             print(trajectory)
             print("\n------------\n")
@@ -77,12 +99,10 @@ class SmolCoder:
             assert self.meta_tokenizer.is_valid_traj(trajectory), f"{self.token_stream}"
             self.token_stream = self.meta_tokenizer.tokenize(trajectory)
             assert isinstance(self.token_stream[-1], Observation)
-
             self._history.append(trajectory)
 
             if self.ACI.finished:
                 break
-            
 
         logger.info("Final trajectory: %s", trajectory)
         return trajectory
