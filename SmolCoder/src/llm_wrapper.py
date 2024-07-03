@@ -6,11 +6,13 @@ class LLM:
         self.model = model
         self.url = url
 
-    def query_completion(self, prompt, stop_token=None):
+    def query_completion(self, prompt, stop_token=None, seed=42):
         data = {
             "model": self.model,
             "prompt": prompt,
-            "stream": True
+            "stream": True,
+            "raw": True,
+            "options": {"cache_prompt": True, "seed": seed}
         }
 
         json_data = json.dumps(data)
@@ -28,6 +30,7 @@ class LLM:
                     decoded_line = line.decode('utf-8')
                     res_json = json.loads(decoded_line)
                     response_text += res_json.get("response", "")
+                    # for DEBUG
                     if stop_token and stop_token in response_text:
                         stop_index = response_text.find(stop_token)
                         response_text = response_text[:stop_index + len(stop_token)]
@@ -61,7 +64,19 @@ Thought: next steps to take based on the previous Observation
 until Action is of type Finish.
 
 ---
-
 Question:  Which are the methods in MyClass?"""
-    response = llm.query_completion(prompt, stop_token="Observation")
-    print(response)
+    import time
+    start_time = time.time()
+    response1 = llm.query_completion(prompt, stop_token="Observation:")
+    end_time = time.time()
+    duration1 = end_time - start_time
+    print(response1)
+    print(f"First API call duration: {duration1} seconds")
+
+    # Timing the second API call
+    start_time = time.time()
+    response2 = llm.query_completion(prompt, stop_token="Observation:")
+    end_time = time.time()
+    duration2 = end_time - start_time
+    print(response2)
+    print(f"Second API call duration: {duration2} seconds")
