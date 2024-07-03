@@ -52,6 +52,9 @@ class ListMethods(Tool):
                                     docstring = f'    """\n{indented_docstring}\n    """'
                                 formatted_methods.append(f"{method_head}\n{docstring}")
         
+        if not formatted_methods:
+            return f"There were no methods in the class {class_name}"
+
         return "\n\n".join(formatted_methods)
 
     def _indent(self, text, spaces):
