@@ -91,7 +91,7 @@ class Action(MetaToken):
     def unpack(self) -> Tuple[str, List[str]]:
         return self.tool_name, self.input_variables
 
-
+#TODO: Observation should carry content and cwd. Cwd should only be printed in the last observation to save space 
 class Observation(MetaToken):
     def __init__(self, content: str) -> None:
         self.content = content
@@ -113,7 +113,7 @@ class MetaTokenizer:
         self.possible_action_token_names = tool_kit.get_possible_actions()
 
     def _get_sysprompt_token(self, prompting_strategy: PromptingStrategy) -> SysPrompt:
-        return SysPrompt(content=prompting_strategy.sysprompt)
+        return SysPrompt(content=prompting_strategy.sysprompt) #TODO: this can be made much easier. Make Sysprompt into Parantheses [sys] [/sys] 
 
     def tokenize(self, trajectory: str) -> List[MetaToken]:
         token_stream = []
