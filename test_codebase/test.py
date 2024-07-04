@@ -11,4 +11,6 @@ class MyClass:
         print('test')
 
 class MyClass2:
-    pass
+    
+    def another_way_to_do_stuff(self, i:int) -> int:
+        return i%12 + 35
