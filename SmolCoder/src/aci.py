@@ -32,11 +32,11 @@ class AgentComputerInterface:
         else:
             return f"Could not change the current working directory to {new_dir}, as it does not exist."
 
-    def get_observation(self, tool_name:str, input_variables: List[str]) -> Tuple[str, str]:
+    def get_observation(self, tool_name:str, input_variables: List[str]) -> str:
         if tool_name == "Move_to_Folder":
             assert len(input_variables) == 1, f"Input variables for `Move_to_Folder` are not of length 1: {input_variables}"
             new_dir = input_variables[0]
-            return "", self._change_cwd(new_dir)
+            return self._change_cwd(new_dir)
         else:
             if tool_name == "Finish":
                 self.finished = True
@@ -49,12 +49,16 @@ class AgentComputerInterface:
                     f"The parameters that the tool {tool.name} needs are {tool.input_variables}"
                     )
             else:
-                obs = self._remove_encapsulating_quotes(tool(input_variables, cwd=self.cwd, logger=self.logger))
-
+                input_variables = [self._remove_encapsulating_quotes(i_v) for i_v in input_variables]
+                obs = tool(input_variables, cwd=self.cwd, logger=self.logger)
+            
             cwd_msg = f"\n{self._generate_cwd_information()}\n"
-            return obs, cwd_msg 
+            obs += cwd_msg
+
+            return obs
 
     def _remove_encapsulating_quotes(self, s) -> str:
         if len(s) >= 2 and ((s[0] == '"' and s[-1] == '"') or (s[0] == "'" and s[-1] == "'")):
+            print("\nRemoving encapsulating quotation marks!\n")
             return s[1:-1]
         return s
