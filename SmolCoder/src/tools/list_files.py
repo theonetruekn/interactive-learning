@@ -19,7 +19,7 @@ class ListFiles(Tool):
     @property 
     def example(self):
         return f"{self.name}[some_dir] or {self.name}[.] to list the files of the current directory"
-
+    #TODO: this should also work with "."
     def __call__(self, input_variables: List[str], cwd: Path, logger) -> str:
         try:
             folder_path = Path(input_variables[0])

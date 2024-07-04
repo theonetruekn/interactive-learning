@@ -26,9 +26,7 @@ class ListClasses(Tool):
         
         file_path = cwd / file_name
         
-        logger.debug("ListClasses in the file %s", file_path)
-
-        #assert file_path.exists(), f"File {file_name} does not exist in the directory {cwd}. Perhaps I should list the files in this directory." #TODO: 
+        logger.debug("ListClasses in the file %s", file_path) 
         
         if not file_path.exists():
             return f'The specified file does not exist: {file_path}'
