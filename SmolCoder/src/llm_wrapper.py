@@ -11,7 +11,7 @@ class LLM:
             "model": self.model,
             "prompt": prompt,
             "stream": True,
-            "raw": True,
+            #"raw": True, # needs to be off for phi3
             "options": {"cache_prompt": True, "seed": seed}
         }
 
