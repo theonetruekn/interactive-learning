@@ -95,24 +95,27 @@ class SmolCoder:
             action = self.token_stream[-1]
             assert isinstance(action, Action)
 
+            print("\nLast Action is the same as current action?: ", action == last_action, "\n")
+
             # If we repeat an action, we backtrack
             if last_action and action == last_action:
                 self.logger.warning("Detected repeated action. Attempting backtracking.")
                 print("Detected repeated action.")
-                assert self._backtrack_action()
+                assert self._backtrack_action(), "Something went wrong while backtracking"
+                trajectory = self.meta_tokenizer.unparse(self.token_stream)
 
             last_action = action
             tool_name, input_variables = action.unpack()
             # If the tool-use fails, we backtrack
             # FIXME: We might want to return errors?
-            try:
-                obs, cwd_info = self.ACI.get_observation(tool_name=tool_name, input_variables=input_variables)
-            except Exception as e:
-                self.logger.error(f"Error during observation: {str(e)}. Attempting backtracking.")
-                assert self._backtrack_action()
-                continue
+            #try:
+            obs = self.ACI.get_observation(tool_name=tool_name, input_variables=input_variables)
+            #except Exception as e:
+            #    self.logger.error(f"Error during observation: {str(e)}. Attempting backtracking.")
+            #    print(f"Error during observation: {str(e)}. Attempting backtracking.")
+            #    assert self._backtrack_action()
+            #    continue
             trajectory += obs
-            trajectory += cwd_info
 
             print("\n------------\n")
             print(trajectory)
