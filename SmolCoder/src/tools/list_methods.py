@@ -24,7 +24,7 @@ class ListMethods(Tool):
     def example(self):
         return f'{self.name}[MyClass]'
 
-    def __call__(self, input_variables:List[str], cwd:Path, logger):
+    def __call__(self, input_variables:List[str], cwd:Path, logger) -> str:
         """
         Extracts function signatures and docstrings from the specified class 
         found in Python files within the provided directory.
@@ -97,9 +97,12 @@ class ListMethods(Tool):
                     all_functions.update(functions_info)
         
         if not bool(all_functions):
-            return "In the current working directory does not exist a class named:" + str(class_name)
+            return "In the current working directory does not exist a class named: " + str(class_name)
         else:
-            return str(all_functions) 
+            output = []
+            for method_name, (signature, docstring) in all_functions.items():
+                output.append(f"Method {signature} with docstring {{ {docstring} }}")
+            return ', '.join(output) 
 
     def _indent(self, text, spaces):
         indent = ' ' * spaces
