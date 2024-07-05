@@ -26,6 +26,9 @@ class Tool(ABC):
     def short_desc(self) -> str:
         return f'{self.name}[{",".join(self.input_variables)}]'
     
+    def valid_params(self, input_variables) -> bool:
+        return len(self.input_variables) == len(input_variables)
+
     def number_of_input_variables(self) -> int:
         return len(self.input_variables)
     
