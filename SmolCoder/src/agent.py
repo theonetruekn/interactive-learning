@@ -92,8 +92,8 @@ class SmolCoder:
             assert self.meta_tokenizer.is_valid_traj(trajectory), f"{self.token_stream}"
             self._history.append(trajectory)
 
-            action = self.token_stream[-1]
-            assert isinstance(action, Action)
+            assert isinstance(self.token_stream[-1], Action)
+            action: Action = self.token_stream[-1]
 
             print("\nLast Action is the same as current action?: ", action == last_action, "\n")
 
