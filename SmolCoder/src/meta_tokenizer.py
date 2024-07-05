@@ -57,7 +57,7 @@ class Thought(MetaToken):
 
     @classmethod
     def match(cls, text: str) -> Union['Thought', None]:
-        match = re.match(rf"{THOUGHT_PREFIX} (.+?)(?=({ACTION_PREFIX}|{OBSERVATION_PREFIX}|$))", text, re.DOTALL)
+        match = re.match(rf"{THOUGHT_PREFIX} (.+?)(?=({ACTION_PREFIX}|$))", text, re.DOTALL)
         if match:
             return cls(content=match.group(1).strip())
         return None
@@ -77,7 +77,7 @@ class Action(MetaToken):
 
     @classmethod
     def match(cls, text: str) -> Union['Action', None]:
-        match = re.match(rf"{ACTION_PREFIX} ([\w_]+)\[(.*?)\](?=({OBSERVATION_PREFIX}|{THOUGHT_PREFIX}|$))", text, re.DOTALL)
+        match = re.match(rf"{ACTION_PREFIX} ([\w_]+)\[(.*?)\](?=({OBSERVATION_PREFIX}|$))", text, re.DOTALL)
         if match:
             tool_name = match.group(1).strip()
             input_variables = [var.strip() for var in match.group(2).strip().split(',')] if match.group(2).strip() else []
