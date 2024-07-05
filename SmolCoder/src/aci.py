@@ -38,22 +38,23 @@ class AgentComputerInterface:
             new_dir = input_variables[0]
             return self._change_cwd(new_dir)
         else:
-            if tool_name == "Finish":
-                self.finished = True
             tool = self.tools.find_tool(tool_name)
             if (tool is None):
                 obs =  f"No tool was found. Please choose one of the following tools: {self.tools.print_tool_short_descs()}" # TODO: Maybe add some stuff about "you can use fuzzy search too"
-            elif (tool.number_of_input_variables() != len(input_variables)):
+            elif (not tool.valid_params(input_variables)):
                 obs = (
                     f"The tool expected {tool.number_of_input_variables()} parameters, but got {len(input_variables)}.\n"
                     f"The parameters that the tool {tool.name} needs are {tool.input_variables}"
                     )
             else:
+                if tool_name == "Finish":
+                    self.finished = True
                 input_variables = [self._remove_encapsulating_quotes(i_v) for i_v in input_variables]
                 obs = tool(input_variables, cwd=self.cwd, logger=self.logger)
             
-            cwd_msg = f"\n{self._generate_cwd_information()}\n"
-            obs += cwd_msg
+            if not self.finished:
+                cwd_msg = f"\n{self._generate_cwd_information()}\n"
+                obs += cwd_msg
 
             return obs
 
