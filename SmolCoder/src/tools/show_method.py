@@ -20,7 +20,7 @@ class ShowMethodBody(Tool):
     
     @property 
     def example(self):
-        raise NotImplementedError
+        return f'{self.name}[class_name, method_name]'
 
     @property
     def desc(self) -> str:
