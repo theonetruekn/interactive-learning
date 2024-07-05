@@ -91,6 +91,7 @@ class Action(MetaToken):
     def unpack(self) -> Tuple[str, List[str]]:
         return self.tool_name, self.input_variables
 
+
 #TODO: Observation should carry content and cwd. Cwd should only be printed in the last observation to save space 
 class Observation(MetaToken):
     def __init__(self, content: str) -> None:
@@ -105,6 +106,7 @@ class Observation(MetaToken):
 
     def unparse(self) -> str:
         return f"{OBSERVATION_PREFIX} {self.content}"
+
 
 class MetaTokenizer:
     

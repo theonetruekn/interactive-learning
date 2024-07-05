@@ -2,16 +2,17 @@ import requests
 import json
 
 class LLM:
-    def __init__(self, model: str, url='http://localhost:11434/api/generate'):
+    def __init__(self, model: str, url='http://localhost:11434/api/generate', raw : bool = False):
         self.model = model
         self.url = url
+        self.raw = raw # if enabled will not return markdown, this hsouldb e set to true when using llam3 and to false if using phi3
 
     def query_completion(self, prompt, stop_token=None, seed=42):
         data = {
             "model": self.model,
             "prompt": prompt,
             "stream": True,
-            #"raw": True, # needs to be off for phi3
+            "raw": self.raw, # needs to be off for phi3
             "options": {"cache_prompt": True, "seed": seed}
         }
 
