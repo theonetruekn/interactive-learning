@@ -1,0 +1,1 @@
+This is a test file, which test if the git diff gets caluclated correctly.
