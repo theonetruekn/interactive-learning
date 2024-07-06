@@ -94,6 +94,15 @@ class SmolCoder:
 
             # assert isinstance(self.token_stream[-1], Action)
             action: Action = self.token_stream[-1]
+            
+            token_str = "("
+            for token in self.token_stream:
+                token_str += str(token) + ", "
+            token_str += ")"
+            
+            print("\n-------")
+            print("Current action_stream: " + token_str)
+            print("-------\n")
 
             print("\nLast Action is the same as current action?: ", action == last_action, "\n")
 
@@ -106,6 +115,7 @@ class SmolCoder:
 
             last_action = action
            
+            # For debugging purpose, only           
             if isinstance(action, Action):
                 print("------")
                 print("action: " + str(action.tool_name))
