@@ -42,7 +42,7 @@ class ReAct(PromptingStrategy):
 
     def _build_sysprompt(self) -> str:
         if self._mode == 0:
-            prompt = "You will be given a description of a `github issue` and your task is, to solve this issue, first you should use tools to investiaget the repo to find the sectio where the error occurs and then you should replace this section with the correct code.\n\n"
+            prompt = "You will be given a description of a `github issue` and your task is, to solve this issue, first you should use tools to investiaget the repo to find the section where the error occurs and then you should replace this section with the correct code.\n\n"
         elif self._mode == 1:
             prompt = "You will be given a description of a `github issue` and your task is, to reproduce this issue by using the available tools to you.\n\n"
         elif self._mode == 2:
@@ -51,6 +51,7 @@ class ReAct(PromptingStrategy):
             raise ValueError("The Mode: " + str(self._mode) + " is not a valid mode for ReAct.")
 
         sysprompt = prompt + (
+            "Try to think step for step, do NOT do steps that are too big.\n\n"
             "To do this, you will interleave Thought, Action, and Observation steps.\n\n"
             "Thought can reason about the current situation.\n" 
             "Action can be the following types, \n"
