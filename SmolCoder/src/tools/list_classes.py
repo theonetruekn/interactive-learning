@@ -27,7 +27,8 @@ class ListClasses(Tool):
         
         file_path = cwd / file_name
         
-        logger.debug("ListClasses in the file %s", file_path) 
+        if logger:
+            logger.debug("ListClasses in the file %s", file_path) 
        
         if not file_path.exists():
             return f'The specified file does not exist: {file_path}'
@@ -56,7 +57,7 @@ class ListClasses(Tool):
             
             if class_entries:
                 result = ", ".join([f"`{name}` with docstring `{doc}`" for name, doc in class_entries])
-                return f"The classes in {file_name} are {result}."
+                return f"The classes in `{file_name}` are {result}."
             else:
                 return f"There are no classes in file {file_name}."
         

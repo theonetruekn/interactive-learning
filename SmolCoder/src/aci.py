@@ -18,7 +18,7 @@ class AgentComputerInterface:
         self.logger = logger 
 
     def _generate_cwd_information(self) -> str:
-        return f"(Current Working Directory: {str(self.cwd)})"
+        return f"(Current Working Directory: {str(self.cwd)}) \n"
 
     def _change_cwd(self, new_dir:str) -> str:        
         path = Path(new_dir)
@@ -26,7 +26,7 @@ class AgentComputerInterface:
         if path.exists():
             if path.is_dir():
                 self.cwd = path
-                return f"Set the current working directory to {str(self.cwd)}"
+                return f"Set the current working directory to `{str(self.cwd)}`."
             else:
                 return f"Could not change the current working directory to {new_dir}, as it is a file, not a directory."
         else:
