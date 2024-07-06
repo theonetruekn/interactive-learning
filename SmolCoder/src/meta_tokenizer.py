@@ -127,6 +127,9 @@ class Observation(MetaToken):
     def unparse(self) -> str:
         return f"{OBSERVATION_PREFIX} {self.content}"
 
+    # used for debugging purpose
+    def __str__(self):
+        return "ObservationToken"
 
 class MetaTokenizer:
     
