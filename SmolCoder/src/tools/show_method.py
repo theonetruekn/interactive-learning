@@ -20,7 +20,7 @@ class ShowMethodBody(Tool):
     
     @property 
     def example(self):
-        raise NotImplementedError
+        return f'{self.name}[class_name, method_name]'
 
     @property
     def desc(self) -> str:
@@ -45,15 +45,20 @@ class ShowMethodBody(Tool):
                         continue
                     
                     if hasattr(module, class_name):
-                        logger.log("Found the correct class %s in the file %s", class_name, str(file_path))
+                        
+                        if logger:
+                            logger.log("Found the correct class %s in the file %s", class_name, str(file_path))
+
                         class_obj = getattr(module, class_name)
                         if hasattr(class_obj, method_name):
-                            logger.log("Found the correct method %s i nthe current class", method_name)
+                            if logger:
+                                logger.log("Found the correct method %s i nthe current class", method_name)
+
                             method_obj = getattr(class_obj, method_name)
                             try:
                                 method_source = inspect.getsource(method_obj)
                                 method_source = textwrap.dedent(method_source)
-                                return method_source.strip()
+                                return "```\n" + method_source.strip() + "\n```"
                             except TypeError:
                                 return f"Could not retrieve source code for {method_name}"
         

@@ -101,8 +101,8 @@ class ListMethods(Tool):
         else:
             output = []
             for method_name, (signature, docstring) in all_functions.items():
-                output.append(f"Method {signature} with docstring {{ {docstring} }}")
-            return ', '.join(output) 
+                output.append(f"Method `{signature}` with docstring `{{ {docstring} }}`")
+            return ',\n'.join(output) 
 
     def _indent(self, text, spaces):
         indent = ' ' * spaces

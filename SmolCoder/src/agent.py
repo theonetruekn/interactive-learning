@@ -92,8 +92,17 @@ class SmolCoder:
             assert self.meta_tokenizer.is_valid_traj(trajectory), f"{self.token_stream}"
             self._history.append(trajectory)
 
-            assert isinstance(self.token_stream[-1], Action)
+            # assert isinstance(self.token_stream[-1], Action)
             action: Action = self.token_stream[-1]
+            
+            token_str_test = "("
+            for curr_token in self.token_stream:
+                token_str_test += str(curr_token) + ", "
+            token_str_test += ")"
+            
+            print("\n-------")
+            print("Current action_stream: " + token_str_test)
+            print("-------\n")
 
             print("\nLast Action is the same as current action?: ", action == last_action, "\n")
 
@@ -105,6 +114,16 @@ class SmolCoder:
                 trajectory = self.meta_tokenizer.unparse(self.token_stream)
 
             last_action = action
+           
+            # For debugging purpose, only           
+            if isinstance(action, Action):
+                print("------")
+                print("action: " + str(action.tool_name))
+
+                print("action args: " + str(action.input_variables))
+                print("------")
+                
+
             tool_name, input_variables = action.unpack()
             # If the tool-use fails, we backtrack
             # FIXME: We might want to return errors?
@@ -123,7 +142,7 @@ class SmolCoder:
 
             assert self.meta_tokenizer.is_valid_traj(trajectory), f"{self.token_stream}"
             self.token_stream = self.meta_tokenizer.tokenize(trajectory)
-            assert isinstance(self.token_stream[-1], Observation)
+
             self._history.append(trajectory)
 
             if self.ACI.finished:

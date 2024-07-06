@@ -12,6 +12,7 @@ THOUGHT_PREFIX = "Thought:"
 ACTION_PREFIX = "Action:"
 OBSERVATION_PREFIX = "Observation:"
 
+
 class MetaToken(ABC):
     @abstractmethod
     def match(cls, text: str) -> Union['MetaToken', None]:
@@ -20,6 +21,7 @@ class MetaToken(ABC):
     @abstractmethod
     def unparse(self) -> str:
         pass
+
 
 class SysPrompt(MetaToken):
     def __init__(self, content: str) -> None:
@@ -32,6 +34,11 @@ class SysPrompt(MetaToken):
 
     def unparse(self) -> str:
         return self.content
+    
+    # used for debugging purpose
+    def __str__(self):
+        return "SysPromptToken"
+
 
 class Question(MetaToken):
     def __init__(self, content: str) -> None:
@@ -50,6 +57,10 @@ class Question(MetaToken):
 
     def unparse(self) -> str:
         return f"{QUESTION_PREFIX} {self.content}"
+    
+    # used for debugging purpose
+    def __str__(self):
+        return "QuestionToken"
 
 class Thought(MetaToken):
     def __init__(self, content: str) -> None:
@@ -64,6 +75,12 @@ class Thought(MetaToken):
 
     def unparse(self) -> str:
         return f"{THOUGHT_PREFIX} {self.content}"
+
+    # used for debugging purpose
+    def __str__(self):
+        return "ThoughtToken"
+
+
 
 class Action(MetaToken):
     def __init__(self, tool_name: str, input_variables: List[str]) -> None:
@@ -91,6 +108,10 @@ class Action(MetaToken):
     def unpack(self) -> Tuple[str, List[str]]:
         return self.tool_name, self.input_variables
 
+    # used for debugging purpose
+    def __str__(self):
+        return "ActionToken"
+
 #TODO: Observation should carry content and cwd. Cwd should only be printed in the last observation to save space 
 class Observation(MetaToken):
     def __init__(self, content: str) -> None:
@@ -105,6 +126,10 @@ class Observation(MetaToken):
 
     def unparse(self) -> str:
         return f"{OBSERVATION_PREFIX} {self.content}"
+
+    # used for debugging purpose
+    def __str__(self):
+        return "ObservationToken"
 
 class MetaTokenizer:
     
