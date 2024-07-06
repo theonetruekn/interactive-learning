@@ -19,11 +19,11 @@ class ListFiles(Tool):
     @property 
     def example(self):
         return f"{self.name}[some_dir] or {self.name}[.] to list the files of the current directory"
-    #TODO: this should also work with "."
-    def __call__(self, input_variables: List[str], cwd: Path, logger) -> str:
+
+    def __call__(self, input_variables: List[str], cwd: Path, logger=None) -> str:
         try:
             folder_path = Path(input_variables[0])
-            full_path = Path(os.path.join(cwd, folder_path))
+            full_path = cwd if folder_path == "." else cwd / folder_path
             
             if logger is not None: 
                 logger.debug("ListFiles with the path in: %s", full_path)
