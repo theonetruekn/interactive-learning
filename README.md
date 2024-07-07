@@ -28,6 +28,45 @@ This project is a work-in-progress.
  - Phi3 as coding agent, finetuned on code/tool-use
  - Phi3 as coding agent, finetuned on code/tool-use with human interaction
 
+## Run the SWE-Bench Evaluation
+
+Python version needs to be at least `3.11` and docker needs to be [installed](https://docs.docker.com/engine/install/) ([alternative](https://get.docker.com/)) and docker needs to run as [daemon](https://www.geeksforgeeks.org/how-to-install-and-configure-docker-on-arch-based-linux-distributionsmanjaro/).
+
+**Test the SWE-Bench installation**
+1. Navigate inside the folder and make sure the requirements are installed:
+```
+cd Evaluation
+cd SWE-bench
+pip install -e .
+```
+
+2. Test the installation:
+```
+python -m swebench.harness.run_evaluation \
+    --predictions_path gold \
+    --max_workers 1 \
+    --instance_ids sympy__sympy-20590 \
+    --run_id validate-gold
+```
+
+
+**Run the SWE-Bench evaluation**
+1. Get your predictions by running the appropiate part of the `Evaluation.ipynb`, make sure to choose the correct dataset (either `swe-bench.json` for the full dataset or `swe-bench-lite.json` for a smaller version).
+2. To evaluate the predictions, navigate to the SWE-Bench folder
+```
+cd Evaluation
+cd SWE-bench
+```
+3. Run the evaluation with the following command, you may need to customize the command:
+```
+python -m swebench.harness.run_evaluation \
+ --predictions_path ../prediction.json \
+ --max_workers 1 \
+ --dataset_name ../swe-bench-lite.json \
+ --run_id YOUR_ID
+```
+4. Your should find a `json` report, listing the evaluation result of your predictions,with `YOUR_ID` inside the `SWE-bench` directory.
+
 ## Resources
 
 **Very Relevant Papers:**
