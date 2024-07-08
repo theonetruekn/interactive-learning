@@ -7,10 +7,15 @@ class MyClass:
         self.one = one
         self.two = two
 
-    def do_stuff(self) -> str:
-        print('test')
+    def do_stuff():
+        test = 5 + 3
+        if test == 8:
+            print(test)
+        else:
+            print('ups')
+        return ''
 
 class MyClass2:
-    
-    def another_way_to_do_stuff(self, i:int) -> int:
-        return i%12 + 35
+
+    def another_way_to_do_stuff(self, i: int) -> int:
+        return i % 12 + 35

@@ -12,7 +12,15 @@ class ReplaceMethod(Tool):
     
     @property 
     def example(self):
-        return f"{self.name}[function_name, some_python_code]"
+        new_method = """
+def do_stuff():
+    test = 5 + 3
+
+    print("test: " + str(test))
+    
+    return test
+"""
+        return f"{self.name}[do_stuff, {new_method}]"
 
     @property
     def input_variables(self) -> List[str]:

@@ -46,9 +46,9 @@ class ReAct(PromptingStrategy):
         elif self._mode == 1:
             prompt = "You will be given a description of a `github issue` and your task is, to reproduce this issue by using the available tools to you.\n\n"
         elif self._mode == 2:
-            prompt = "You will be given `question` and you will respond with `answer`."
+            prompt = "You will be given `question` and you will respond with `answer`.\n\n"
         else:
-            raise ValueError("The Mode: " + str(self._mode) + " is not a valid mode for ReAct.")
+            raise ValueError("The Mode: " + str(self._mode) + " is not a valid mode for ReAct. ")
 
         sysprompt = prompt + (
             "Try to think step for step, do NOT do steps that are too big.\n"
@@ -97,8 +97,32 @@ class ReAct(PromptingStrategy):
        
         return prompt
 
+
+
+
+NEW_METHOD = """
+def get_system_call_names():
+    psn_dir=os.path.dirname(os.path.realpath(__file__))
+    kernel_ver=platform.release().split('-')[0]
+
+    # this probably needds to be improved for better platform support
+    if platform.machine() == 'aarch64':
+        unistd_64_paths = ['/usr/include/asm-generic/unistd.h']
+    else:
+        unistd_64_paths = ['/usr/include/asm/unistd_64.h', '/usr/include/x86_64-linux-gnu/asm/unistd_64.h', '/usr/include/asm-x86_64/unistd.h', '/usr/include/asm/unistd.h', psn_dir+'/syscall_64_'+kernel_ver+'.h', psn_dir+'/syscall_64.h']
+
+    for path in unistd_64_paths:
+        try:
+            with open(path) as f:
+                return extract_system_call_ids(f)
+        except IOError as e:
+            pass
+
+    raise Exception('unistd_64.h not found in' + ' or '.join(unistd_64_paths) + '.\n
+"""
+
 # Adaped from: https://github.com/tanelpoder/0xtools/issues/37
-FEW_SHOT_EXAMPLE = """
+FEW_SHOT_EXAMPLE = f"""
 Question: psn v1.2.3 release may show wrong syscall names on x86_64 due to looking them up from a wrong/template file, unistd.h files on ARM/aarch64 work somewhat differently from x86_64.
 
 Thought: First, I need to locate the section in the repository that corresponds to the Issue where the wrong syscall names are displayed. For that I should list all the files.
@@ -171,28 +195,7 @@ def get_system_call_names():
 
 Thought: The Issue describes that syscalls are wrongly displayed on the x86_64 platform, we should check for the different platforms and based on the platform return the correct syscalls.
 
-Action: Replace_Method[ProcSource, get_system_call_names, 
-```
-def get_system_call_names():
-    psn_dir=os.path.dirname(os.path.realpath(__file__))
-    kernel_ver=platform.release().split('-')[0]
-
-    # this probably needds to be improved for better platform support
-    if platform.machine() == 'aarch64':
-        unistd_64_paths = ['/usr/include/asm-generic/unistd.h']
-    else:
-        unistd_64_paths = ['/usr/include/asm/unistd_64.h', '/usr/include/x86_64-linux-gnu/asm/unistd_64.h', '/usr/include/asm-x86_64/unistd.h', '/usr/include/asm/unistd.h', psn_dir+'/syscall_64_'+kernel_ver+'.h', psn_dir+'/syscall_64.h']
-
-    for path in unistd_64_paths:
-        try:
-            with open(path) as f:
-                return extract_system_call_ids(f)
-        except IOError as e:
-            pass
-
-    raise Exception('unistd_64.h not found in' + ' or '.join(unistd_64_paths) + '.\n
-```
-]
+Action: Replace_Method[ProcSource, get_system_call_names, {NEW_METHOD}]
 
 Observation: Method `get_system_call_names` in class `ProcSource` replaced successfully in file `snproc.py`.
 
