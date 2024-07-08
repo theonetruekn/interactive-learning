@@ -61,14 +61,15 @@ class ReAct(PromptingStrategy):
         sysprompt += "\n Input variables of the tools do not need quotation marks around them. In addition, do NOT use the `finish` tool before having made all changes to remedy the issue.\n"
 
         sysprompt += (
-                "The following is an example on how you should act:\n"
+                "\n\nThe following is an example on how you should act:\n"
                 "--------------"
                 f"{FEW_SHOT_EXAMPLE}"
                 "--------------"
+                "\n\n"
         )
 
         sysprompt += (
-            "\n---\n\n"
+            "The Example is now finished, during your execution,"
             "Follow the following format:\n\n"
             f"{self.THOUGHT_TOKEN} Reasoning which action to take to solve the task.\n"
             f"{self.ACTION_TOKEN} Always either "
