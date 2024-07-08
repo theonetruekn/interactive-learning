@@ -46,22 +46,22 @@ class ReAct(PromptingStrategy):
         elif self._mode == 1:
             prompt = "You will be given a description of a `github issue` and your task is, to reproduce this issue by using the available tools to you.\n\n"
         elif self._mode == 2:
-            prompt = "You will be given `question` and you will respond with `answer`.\n\n"
+            prompt = "You will be given `question` and you will respond with `answer`."
         else:
             raise ValueError("The Mode: " + str(self._mode) + " is not a valid mode for ReAct.")
 
         sysprompt = prompt + (
-            "Try to think step for step, do NOT do steps that are too big.\n\n"
-            "To do this, you will interleave Thought, Action, and Observation steps.\n\n"
-            "Thought can reason about the current situation.\n" 
+            "Try to think step for step, do NOT do steps that are too big.\n"
+            "To do this, you will interleave Thought, Action, and Observation steps.\n"
+            "Thought can reason about the current situation.\n\n" 
             "Action can be the following types, \n"
         )
 
         sysprompt += self.toolkit.pretty_print_tools()
-        sysprompt += "\n Input variables of the tools do not need quotation marks around them. In addition, do NOT use the `finish` tool before having made all changes to remedy the issue.\n"
+        sysprompt += "\n\nInput variables of the tools do not need quotation marks around them. In addition, do NOT use the `finish` tool before having made all changes to remedy the issue.\n\n"
 
         sysprompt += (
-                "\n\nThe following is an example on how you should act:\n"
+                "The following is an example on how you should act:\n"
                 "--------------"
                 f"{FEW_SHOT_EXAMPLE}"
                 "--------------"
@@ -69,8 +69,8 @@ class ReAct(PromptingStrategy):
         )
 
         sysprompt += (
-            "The Example is now finished, during your execution,"
-            "Follow the following format:\n\n"
+            "The Example is now finished, during your execution, "
+            "follow the following format:\n\n"
             f"{self.THOUGHT_TOKEN} Reasoning which action to take to solve the task.\n"
             f"{self.ACTION_TOKEN} Always either "
         )
@@ -81,7 +81,8 @@ class ReAct(PromptingStrategy):
             f"\n{self.OBSERVATION_TOKEN} result of the previous Action\n"
             f"{self.THOUGHT_TOKEN} next steps to take based on the previous Observation\n"
             "...\n"
-            "until Action is of type `Finish`. Do not use any special formatation such as markdown.\n\n"
+            "until Action is of type `Finish`.\n"
+            "Do not use any special formatation such as markdown.\n\n"
             "---\n\n"
         )
 
