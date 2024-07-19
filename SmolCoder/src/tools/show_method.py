@@ -32,34 +32,26 @@ class ShowMethodBody(Tool):
             for file in files:
                 if file.endswith('.py'):
                     file_path = os.path.join(root, file)
-                    module_name = os.path.splitext(os.path.relpath(file_path, cwd))[0].replace(os.sep, '.')
-                    
-                    try:
-                        spec = importlib.util.spec_from_file_location(module_name, file_path)
-                        if spec and spec.loader:
-                            module = importlib.util.module_from_spec(spec)
-                            sys.modules[module_name] = module
-                            spec.loader.exec_module(module)
-                    except Exception as e:
-                        print(f"Failed to import {module_name}: {e}")
-                        continue
-                    
-                    if hasattr(module, class_name):
-                        
-                        if logger:
-                            logger.log("Found the correct class %s in the file %s", class_name, str(file_path))
-
-                        class_obj = getattr(module, class_name)
-                        if hasattr(class_obj, method_name):
-                            if logger:
-                                logger.log("Found the correct method %s i nthe current class", method_name)
-
-                            method_obj = getattr(class_obj, method_name)
-                            try:
-                                method_source = inspect.getsource(method_obj)
-                                method_source = textwrap.dedent(method_source)
-                                return "```\n" + method_source.strip() + "\n```"
-                            except TypeError:
-                                return f"Could not retrieve source code for {method_name}"
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        try:
+                            file_content = f.read()
+                            tree = ast.parse(file_content, filename=file_path)
+                            
+                            for node in ast.walk(tree):
+                                if isinstance(node, ast.ClassDef) and node.name == class_name:
+                                    if logger:
+                                        logger.log(f"Found the correct class {class_name} in the file {file_path}")
+                                    
+                                    for class_node in node.body:
+                                        if isinstance(class_node, ast.FunctionDef) and class_node.name == method_name:
+                                            if logger:
+                                                logger.log(f"Found the correct method {method_name} in the class {class_name}")
+                                            
+                                            # Retrieve the source code of the method
+                                            method_source_lines = file_content.splitlines()[class_node.lineno-1:class_node.end_lineno]
+                                            method_source = '\n'.join(method_source_lines)
+                                            return f"```\n{method_source.strip()}\n```"
+                        except Exception as e:
+                            print(f"Failed to parse {file_path}: {e}")
         
         return f"Class {class_name} with method {method_name} not found in any module in {cwd}"
