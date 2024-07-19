@@ -99,9 +99,10 @@ class SmolCoder:
             for curr_token in self.token_stream:
                 token_str_test += str(curr_token) + ", "
             token_str_test += ")"
-            
+           
             print("\n-------")
-            print("Current action_stream: " + token_str_test)
+            print("Current action_stream: " + token_str_test + "\n")
+            print("Last token: " + str(action))
             print("-------\n")
 
             print("\nLast Action is the same as current action?: ", action == last_action, "\n")

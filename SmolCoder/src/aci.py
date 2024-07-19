@@ -20,10 +20,16 @@ class AgentComputerInterface:
     def _generate_cwd_information(self) -> str:
         return f"(Current Working Directory: {str(self.cwd)}) \n"
 
-    def _change_cwd(self, new_dir:str) -> str:        
-        path = Path(new_dir)
+    def _change_cwd(self, new_dir:str) -> str:  
+        print("Activated Move_to_Folder tool")
+        print("current working directory: " + str(self.cwd))
+
+        path = self.cwd / Path(new_dir)
+
+        print("New directory path: " + str(path))
         
         if path.exists():
+            print("The New directory path doesn't exist.")
             if path.is_dir():
                 self.cwd = path
                 return f"Set the current working directory to `{str(self.cwd)}`."

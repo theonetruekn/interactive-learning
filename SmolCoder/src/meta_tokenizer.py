@@ -62,6 +62,7 @@ class Question(MetaToken):
     def __str__(self):
         return "QuestionToken"
 
+
 class Thought(MetaToken):
     def __init__(self, content: str) -> None:
         self.content = content
@@ -171,12 +172,15 @@ class MetaTokenizer:
             token_stream = traj
 
         if not token_stream:
+            print("Logger: when validatin the trajectory the trajectory was empty.")
             return False
 
         if not isinstance(token_stream[0], SysPrompt):
+            print("Logger: when validating the trajectory, the first metatoken was not a systemprompt.")
             return False
 
         if len(token_stream) > 1 and not isinstance(token_stream[1], Question):
+            print("Logger: when validating the trajectory, the second token was not a question token.")
             return False
 
         expected_types = [Thought, Action, Observation]
@@ -184,6 +188,14 @@ class MetaTokenizer:
         while index < len(token_stream):
             expected_type = expected_types[(index - 2) % 3]
             if not isinstance(token_stream[index], expected_type):
+                print("Logger: When validating the trajectory, a unexspected token was found: expected: '" + str(expected_type) + "' but got: '" + str(token_stream[index]) + "'.")
+                
+                token_str_test = "("
+                for curr_token in token_stream:
+                    token_str_test += str(curr_token) + ", "
+                token_str_test += ")"
+           
+                print("Current token stream: " + str(token_str_test))
                 return False
             index += 1
 
