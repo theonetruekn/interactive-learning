@@ -82,7 +82,8 @@ class ReAct(PromptingStrategy):
             f"{self.THOUGHT_TOKEN} next steps to take based on the previous Observation\n"
             "...\n"
             "until Action is of type `Finish`.\n"
-            "Do not use any special formatation such as markdown.\n\n"
+            "Do not use any special formatation such as markdown.\n"
+            "The 'Observation' will automatically returned to you afetr you used an action, you do not need to generate it."
             "---\n\n"
         )
 
@@ -123,6 +124,8 @@ def get_system_call_names():
 
 # Adaped from: https://github.com/tanelpoder/0xtools/issues/37
 FEW_SHOT_EXAMPLE = f"""
+StartFewShotExamples
+
 Question: psn v1.2.3 release may show wrong syscall names on x86_64 due to looking them up from a wrong/template file, unistd.h files on ARM/aarch64 work somewhat differently from x86_64.
 
 Thought: First, I need to locate the section in the repository that corresponds to the Issue where the wrong syscall names are displayed. For that I should list all the files.
@@ -202,4 +205,6 @@ Observation: Method `get_system_call_names` in class `ProcSource` replaced succe
 Thought: Since we have successfully replaced the method with the new code, the Issue should now be fixed and we can finish the execution.
 
 Action: Finish["The Issue is fixed"]
+
+EndFewShotExamples
 """

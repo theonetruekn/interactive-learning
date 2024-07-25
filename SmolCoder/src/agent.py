@@ -40,8 +40,10 @@ class SmolCoder:
         self.meta_tokenizer = MetaTokenizer(toolkit, self.prompting_strategy)
         self.token_stream: List[MetaToken] = [] # this saves the tokens (Action, Thought, Observation, ...)
         self._history = [] # this saves the history of the trajectory
-
+        
         self.logger.debug("-------------------------------------------------------------------------------------------")
+        self.logger.debug("-------------------------------------------------------------------------------------------")
+        self.logger.debug("Started new SmolCoder Run")
         self.logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
                      model, codebase_dir, toolkit, prompting_strategy)
     
@@ -95,17 +97,43 @@ class SmolCoder:
             # assert isinstance(self.token_stream[-1], Action)
             action: Action = self.token_stream[-1]
             
+
+            # Debugging
+            # ------------------------------------------------------------------
             token_str_test = "("
             for curr_token in self.token_stream:
                 token_str_test += str(curr_token) + ", "
             token_str_test += ")"
+           
+            self.logger.debug("\n-------")
+            self.logger.debug("Current action_stream: " + token_str_test + "\n")
+            self.logger.debug("Last token: " + str(action))
+            self.logger.debug("-------\n")
+
+            self.logger.debug("\nLast Action is the same as current action?: ", action == last_action, "\n")
+            # ------------------------------------------------------------------
             
-            print("\n-------")
-            print("Current action_stream: " + token_str_test)
-            print("-------\n")
 
-            print("\nLast Action is the same as current action?: ", action == last_action, "\n")
+            # This happens when the agent forgets to adhere to the ReAct framework
+            # e.g. after the observation instead of generating something starting with "Action" it generates bullshit
+            if not isinstance(self.token_stream[-1], Action):
+                trajectory += """
+It looks like the current response deviates from the expected sequence of Action, Thought, Observation. Please adhere to the following format to maintain consistency:
+Thought: Reasoning which action to take to solve the task.
+Action: Always either List_Files[folder] or Move_to_Folder[new_directory] or List_Classes[file_name] or List_Methods[class_name] or Show_Method_Body[class_name,method_name] or Replace_Method[class_name,method_name,new_method] or Finish[answer]
+Observation: result of the previous Action
+Thought: next steps to take based on the previous Observation
+...
+until Action is of type `Finish`.
+Do not use any special formatation such as markdown.
+"The 'Observation' will automatically returned to you after you used an action, you do not need to generate it.
+\n
+"""
+                
+                self._history.append(trajectory)
+                continue
 
+            
             # If we repeat an action, we backtrack
             if last_action and action == last_action:
                 self.logger.warning("Detected repeated action. Attempting backtracking.")
@@ -117,11 +145,11 @@ class SmolCoder:
            
             # For debugging purpose, only           
             if isinstance(action, Action):
-                print("------")
-                print("action: " + str(action.tool_name))
+                self.logger.debug("------")
+                self.logger.debug("action: " + str(action.tool_name))
 
-                print("action args: " + str(action.input_variables))
-                print("------")
+                self.logger.debug("action args: " + str(action.input_variables))
+                self.logger.debug("------")
                 
 
             tool_name, input_variables = action.unpack()
@@ -135,10 +163,6 @@ class SmolCoder:
             #    assert self._backtrack_action()
             #    continue
             trajectory += obs
-
-            print("\n------------\n")
-            print(trajectory)
-            print("\n------------\n")
 
             assert self.meta_tokenizer.is_valid_traj(trajectory), f"{self.token_stream}"
             self.token_stream = self.meta_tokenizer.tokenize(trajectory)

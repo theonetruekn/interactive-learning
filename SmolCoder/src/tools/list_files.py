@@ -22,6 +22,7 @@ class ListFiles(Tool):
 
     #TODO: this should also work with "."
     def __call__(self, input_variables: List[str], cwd: Path, logger) -> str:
+        
         full_path = cwd
         
         if not full_path.exists():
@@ -35,7 +36,16 @@ class ListFiles(Tool):
             for entry in full_path.iterdir():
                 entry_suffix = '/' if entry.is_dir() else ''
                 entries.append(f"{entry.name}{entry_suffix}")
-            return f"The entries in the directory `{str(full_path)}` are:\n" + "\n".join(entries)
+            
+            # If the agent gives this tool as input something else as "." ignore it
+            # but give a message back
+            if input_variables[0] != ".":
+                output = f"The List_File tool got '{str(full_path)}' as input, but only takes '.' as input, the entries of the current working directory are: \n"
+            else:
+                output = f"The entries of the current working directory `{str(full_path)}` are:\n"
+
+            return output + "\n".join(entries)
+
         except PermissionError:
             return f'Permission denied: Unable to access the folder: {full_path}'
         except Exception as e:
