@@ -1,6 +1,7 @@
 import ast
 from pathlib import Path
 from typing import List
+import os 
 
 from SmolCoder.src.tools.tool import Tool
 
@@ -26,10 +27,14 @@ class ListClasses(Tool):
         
         file_path = cwd / file_name
         
-        logger.debug("ListClasses in the file %s", file_path) 
-        
+        if logger:
+            logger.debug("ListClasses in the file %s", file_path) 
+       
         if not file_path.exists():
             return f'The specified file does not exist: {file_path}'
+        
+        if os.path.isdir(file_path):
+            return f'The specified path: {file_path} is a directory but expected a file.'
         
         if not file_path.is_file():
             return f'The specified path is not a file: {file_path}'
@@ -52,7 +57,7 @@ class ListClasses(Tool):
             
             if class_entries:
                 result = ", ".join([f"`{name}` with docstring `{doc}`" for name, doc in class_entries])
-                return f"The classes in {file_name} are {result}."
+                return f"The classes in `{file_name}` are {result}."
             else:
                 return f"There are no classes in file {file_name}."
         

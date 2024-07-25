@@ -18,15 +18,21 @@ class AgentComputerInterface:
         self.logger = logger 
 
     def _generate_cwd_information(self) -> str:
-        return f"(Current Working Directory: {str(self.cwd)})"
+        return f"(Current Working Directory: {str(self.cwd)}) \n"
 
-    def _change_cwd(self, new_dir:str) -> str:        
-        path = Path(new_dir)
+    def _change_cwd(self, new_dir:str) -> str:  
+        self.logger.debug("Activated Move_to_Folder tool")
+        self.logger.debug("current working directory: " + str(self.cwd))
+
+        path = self.cwd / Path(new_dir)
+
+        self.logger.debug("New directory path: " + str(path))
         
         if path.exists():
+            print("The New directory path doesn't exist.")
             if path.is_dir():
                 self.cwd = path
-                return f"Set the current working directory to {str(self.cwd)}"
+                return f"Set the current working directory to `{str(self.cwd)}`."
             else:
                 return f"Could not change the current working directory to {new_dir}, as it is a file, not a directory."
         else:
@@ -60,6 +66,6 @@ class AgentComputerInterface:
 
     def _remove_encapsulating_quotes(self, s) -> str:
         if len(s) >= 2 and ((s[0] == '"' and s[-1] == '"') or (s[0] == "'" and s[-1] == "'")):
-            print("\nRemoving encapsulating quotation marks!\n")
+            self.logger.debug("\nRemoving encapsulating quotation marks!\n")
             return s[1:-1]
         return s

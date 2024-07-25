@@ -20,6 +20,7 @@ class MetaToken(ABC):
     def unparse(self) -> str:
         pass
 
+
 class SysPrompt(MetaToken):
     def __init__(self, content: str) -> None:
         self.content = content
@@ -35,6 +36,11 @@ class SysPrompt(MetaToken):
 
     def unparse(self) -> str:
         return f"{SYSPROMPT_TOKEN}{self.content}{SYSPROMPT_TOKEN}"
+    
+    # used for debugging purpose
+    def __str__(self):
+        return "SysPromptToken"
+
 
 class Question(MetaToken):
     def __init__(self, content: str) -> None:
@@ -57,6 +63,11 @@ class Question(MetaToken):
 
     def unparse(self) -> str:
         return f"{QUESTION_TOKEN}{self.content}"
+    
+    # used for debugging purpose
+    def __str__(self):
+        return "QuestionToken"
+
 
 class Thought(MetaToken):
     def __init__(self, content: str) -> None:
@@ -74,6 +85,11 @@ class Thought(MetaToken):
 
     def unparse(self) -> str:
         return f"{THOUGHT_TOKEN}{self.content}"
+
+    # used for debugging purpose
+    def __str__(self):
+        return "ThoughtToken"
+
 
 class Action(MetaToken):
     def __init__(self, tool_name: str, input_variables: List[str]) -> None:
@@ -99,11 +115,17 @@ class Action(MetaToken):
         return None, -1
 
     def unparse(self) -> str:
+        if self.tool_name == "Finish":
+            return f"{ACTION_TOKEN}{self.tool_name}[{self.input_variables[0]}]"
         input_vars = ", ".join(self.input_variables)
         return f"{ACTION_TOKEN}{self.tool_name}[{input_vars}]"
 
     def unpack(self) -> Tuple[str, List[str]]:
         return self.tool_name, self.input_variables
+
+    # used for debugging purpose
+    def __str__(self):
+        return "ActionToken"
 
 #TODO: Observation should carry content and cwd. Cwd should only be printed in the last observation to save space 
 class Observation(MetaToken):
@@ -122,6 +144,11 @@ class Observation(MetaToken):
     def unparse(self) -> str:
         return f"{OBS_TOKEN}{self.content}"
 
+    # used for debugging purpose
+    def __str__(self):
+        return "ObservationToken"
+
+
 class MetaTokenizer:
     
     def __init__(self, tool_kit: Toolkit) -> None:
@@ -138,7 +165,12 @@ class MetaTokenizer:
 
         # normalize trajectory
         trajectory = trajectory.replace("\n", "")
-
+        
+        #Handles FewShotExamples in the prompt
+        #token = FewShotExamples.match(trajectory)
+        #token_stream.append(token)
+        #trajectory = trajectory[len(token.unparse()):].strip()  
+        
         while trajectory:
             trajectory = trajectory.strip()
             for token_class in [Question, Thought, Action, Observation]:
@@ -159,12 +191,15 @@ class MetaTokenizer:
             token_stream = traj
 
         if not token_stream:
+            print("Logger: when validatin the trajectory the trajectory was empty.")
             return False
 
         if not isinstance(token_stream[0], SysPrompt):
+            print("Logger: when validating the trajectory, the first metatoken was not a systemprompt.")
             return False
 
         if len(token_stream) > 1 and not isinstance(token_stream[1], Question):
+            print("Logger: when validating the trajectory, the second token was not a question token.")
             return False
 
         expected_types = [Thought, Action, Observation]
@@ -172,6 +207,14 @@ class MetaTokenizer:
         while index < len(token_stream):
             expected_type = expected_types[(index - 2) % 3]
             if not isinstance(token_stream[index], expected_type):
+                print("Logger: When validating the trajectory, a unexspected token was found: expected: '" + str(expected_type) + "' but got: '" + str(token_stream[index]) + "'.")
+                
+                token_str_test = "("
+                for curr_token in token_stream:
+                    token_str_test += str(curr_token) + ", "
+                token_str_test += ")"
+           
+                print("Current token stream: " + str(token_str_test))
                 return False
             index += 1
 

@@ -14,7 +14,7 @@ class ListFiles(Tool):
 
     @property
     def desc(self) -> str:
-        return "lists all the files and subfolder that are in the folder."
+        return "lists all the files and subfolder that are in the current folder."
     
     @property 
     def example(self):
@@ -31,18 +31,27 @@ class ListFiles(Tool):
             return "Something went wrong when parsing the path to the folder location: " + str(e)
 
         if not full_path.exists():
-            return f'The specified folder does not exist: {folder_path}'
+            return f'The specified folder does not exist: {full_path}'
         
         if not full_path.is_dir():
-            return f'The specified path is not a folder: {folder_path}'
+            return f'The specified path is not a folder: {full_path}'
         
         try:
             entries = []
             for entry in full_path.iterdir():
                 entry_suffix = '/' if entry.is_dir() else ''
                 entries.append(f"{entry.name}{entry_suffix}")
-            return f"The entries in {str(full_path)} are:\n" + "\n".join(entries)
+            
+            # If the agent gives this tool as input something else as "." ignore it
+            # but give a message back
+            if input_variables[0] != ".":
+                output = f"The List_File tool got '{str(full_path)}' as input, but only takes '.' as input, the entries of the current working directory are: \n"
+            else:
+                output = f"The entries of the current working directory `{str(full_path)}` are:\n"
+
+            return output + "\n".join(entries)
+
         except PermissionError:
-            return f'Permission denied: Unable to access the folder: {folder_path}'
+            return f'Permission denied: Unable to access the folder: {full_path}'
         except Exception as e:
             return f'An error occurred: {e}'

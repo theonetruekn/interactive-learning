@@ -12,7 +12,15 @@ class ReplaceMethod(Tool):
     
     @property 
     def example(self):
-        return f"{self.name}[function_name, some_python_code]"
+        new_method = """
+def do_stuff():
+    test = 5 + 3
+
+    print("test: " + str(test))
+    
+    return test
+"""
+        return f"{self.name}[do_stuff, {new_method}]"
 
     @property
     def input_variables(self) -> List[str]:
@@ -28,7 +36,10 @@ class ReplaceMethod(Tool):
         # assert(self._lint(new_method))
         for filename in os.listdir(cwd):
             full_path = os.path.join(cwd, filename)
-            logger.debug("ReplaceMethod opening the file %s", full_path)
+
+            if logger:
+                logger.debug("ReplaceMethod opening the file %s", full_path)
+
             if os.path.isfile(full_path) and full_path.endswith(".py"):
                 with open(full_path, 'r', encoding='utf-8') as f:
                     content = f.read()
@@ -38,7 +49,10 @@ class ReplaceMethod(Tool):
                             if isinstance(node, ast.ClassDef) and node.name == class_name:
                                 for class_node in node.body:
                                     if isinstance(class_node, ast.FunctionDef) and class_node.name == method_name:
-                                        logger.debug("Found the to be replaced method.")
+
+                                        if logger:
+                                            logger.debug("Found the to be replaced method.")
+
                                         # Remove the existing method
                                         node.body.remove(class_node)
                                         # Add the new method
