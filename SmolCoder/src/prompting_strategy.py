@@ -26,10 +26,10 @@ class PromptingStrategy(ABC):
             raise ValueError
 
 class ReAct(PromptingStrategy):
-
-    THOUGHT_TOKEN = "Thought:"
-    ACTION_TOKEN = "Action:"
-    OBSERVATION_TOKEN = "Observation:"
+    SYSPROMPT_TOKEN = "[Sysprompt]"
+    THOUGHT_TOKEN = "[Thought]"
+    ACTION_TOKEN = "[Action]"
+    OBSERVATION_TOKEN = "[Observation]"
 
     def __init__(self, name:str, lm: LLM, toolkit:Toolkit, mode:int = 2) -> None:
         """
@@ -41,16 +41,18 @@ class ReAct(PromptingStrategy):
         self._sysprompt = self._build_sysprompt()
 
     def _build_sysprompt(self) -> str:
+        sysprompt = self.SYSPROMPT_TOKEN
+        
         if self._mode == 0:
-            prompt = "You will be given a description of a `github issue` and your task is, to solve this issue, first you should use tools to investiaget the repo to find the sectio where the error occurs and then you should replace this section with the correct code.\n\n"
+            sysprompt += "You will be given a description of a `github issue` and your task is, to solve this issue, first you should use tools to investiaget the repo to find the sectio where the error occurs and then you should replace this section with the correct code.\n\n"
         elif self._mode == 1:
-            prompt = "You will be given a description of a `github issue` and your task is, to reproduce this issue by using the available tools to you.\n\n"
+            sysprompt += "You will be given a description of a `github issue` and your task is, to reproduce this issue by using the available tools to you.\n\n"
         elif self._mode == 2:
-            prompt = "You will be given `question` and you will respond with `answer`.\n\n"
+            sysprompt += "You will be given `question` and you will respond with `answer`.\n\n"
         else:
             raise ValueError("The Mode: " + str(self._mode) + " is not a valid mode for ReAct.")
 
-        sysprompt = prompt + (
+        sysprompt += (
             "To do this, you will interleave Thought, Action, and Observation steps.\n\n"
             "Thought can reason about the current situation.\n" 
             "Action can be the following types, \n"
@@ -61,19 +63,21 @@ class ReAct(PromptingStrategy):
         sysprompt += (
             "\n---\n\n"
             "Follow the following format:\n\n"
-            f"{self.THOUGHT_TOKEN} Reasoning which action to take to solve the task.\n"
-            f"{self.ACTION_TOKEN} Always either "
+            f"{self.THOUGHT_TOKEN}Reasoning which action to take to solve the task.\n"
+            f"{self.ACTION_TOKEN}Always either "
         )
 
         sysprompt += self.toolkit.print_tool_short_descs()
 
         sysprompt += (
-            f"\n{self.OBSERVATION_TOKEN} result of the previous Action\n"
-            f"{self.THOUGHT_TOKEN} next steps to take based on the previous Observation\n"
+            f"\n{self.OBSERVATION_TOKEN}result of the previous Action\n"
+            f"{self.THOUGHT_TOKEN}next steps to take based on the previous Observation\n"
             "...\n"
-            "until Action is of type `Finish`. Do not use any special formatation such as markdown.\n\n"
+            f"until {self.ACTION_TOKEN} is of type `Finish`. Do not use any special formatation such as markdown.\n\n"
             "---\n\n"
         )
+
+        sysprompt += self.SYSPROMPT_TOKEN
 
         return sysprompt
 
@@ -82,6 +86,4 @@ class ReAct(PromptingStrategy):
             prompt = self.sysprompt + prompt + "\n"
         
         prompt += self.lm.query_completion(prompt, stop_token=self.OBSERVATION_TOKEN)
-        prompt += " " #adds whitespace after "Observation:"
-       
         return prompt
