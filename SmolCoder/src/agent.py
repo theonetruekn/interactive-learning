@@ -40,8 +40,10 @@ class SmolCoder:
         self.meta_tokenizer = MetaTokenizer(toolkit, self.prompting_strategy)
         self.token_stream: List[MetaToken] = [] # this saves the tokens (Action, Thought, Observation, ...)
         self._history = [] # this saves the history of the trajectory
-
+        
         self.logger.debug("-------------------------------------------------------------------------------------------")
+        self.logger.debug("-------------------------------------------------------------------------------------------")
+        self.logger.debug("Started new SmolCoder Run")
         self.logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
                      model, codebase_dir, toolkit, prompting_strategy)
     
@@ -103,12 +105,12 @@ class SmolCoder:
                 token_str_test += str(curr_token) + ", "
             token_str_test += ")"
            
-            print("\n-------")
-            print("Current action_stream: " + token_str_test + "\n")
-            print("Last token: " + str(action))
-            print("-------\n")
+            self.logger.debug("\n-------")
+            self.logger.debug("Current action_stream: " + token_str_test + "\n")
+            self.logger.debug("Last token: " + str(action))
+            self.logger.debug("-------\n")
 
-            print("\nLast Action is the same as current action?: ", action == last_action, "\n")
+            self.logger.debug("\nLast Action is the same as current action?: ", action == last_action, "\n")
             # ------------------------------------------------------------------
             
 
@@ -143,11 +145,11 @@ Do not use any special formatation such as markdown.
            
             # For debugging purpose, only           
             if isinstance(action, Action):
-                print("------")
-                print("action: " + str(action.tool_name))
+                self.logger.debug("------")
+                self.logger.debug("action: " + str(action.tool_name))
 
-                print("action args: " + str(action.input_variables))
-                print("------")
+                self.logger.debug("action args: " + str(action.input_variables))
+                self.logger.debug("------")
                 
 
             tool_name, input_variables = action.unpack()
