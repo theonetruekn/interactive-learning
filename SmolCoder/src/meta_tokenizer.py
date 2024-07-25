@@ -11,8 +11,6 @@ QUESTION_PREFIX = "Question:"
 THOUGHT_PREFIX = "Thought:"
 ACTION_PREFIX = "Action:"
 OBSERVATION_PREFIX = "Observation:"
-FEWSHOT_PREFIX = "StartFewShotExamples"
-FEWSHOT_SUFFIX = "EndFewShotExamples"
 
 class MetaToken(ABC):
     @abstractmethod
@@ -39,30 +37,6 @@ class SysPrompt(MetaToken):
     # used for debugging purpose
     def __str__(self):
         return "SysPromptToken"
-
-
-class FewShotExamples(MetaToken):
-    def __init__(self, content: str) -> None:
-        self.content = content
-
-    @classmethod
-    def match(cls, text: str) -> Union['Thought', None]:
-        pattern = rf"{FEWSHOT_PREFIX}(.*?){FEWSHOT_SUFFIX}"
-        match = re.search(pattern, text, re.DOTALL) 
-
-        print("the match is: " + str(match))
-        print("the text is: \n" + str(text))
-        
-        if match:
-            return cls(content=match.group(1).strip())
-        return None
-
-    def unparse(self) -> str:
-        return f"{FEWSHOT_PREFIX} {self.content}{FEWSHOT_SUFFIX}"
-
-    # used for debugging purpose
-    def __str__(self):
-        return "FewShotExampleToken"
 
 
 class Question(MetaToken):
