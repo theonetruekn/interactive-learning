@@ -82,7 +82,8 @@ class ReAct(PromptingStrategy):
             f"{self.THOUGHT_TOKEN} next steps to take based on the previous Observation\n"
             "...\n"
             "until Action is of type `Finish`.\n"
-            "Do not use any special formatation such as markdown.\n\n"
+            "Do not use any special formatation such as markdown.\n"
+            "The 'Observation' will automatically returned to you afetr you used an action, you do not need to generate it."
             "---\n\n"
         )
 
