@@ -2,19 +2,18 @@ import re
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Union
 
-# Importing the necessary classes from the hypothetical external modules
-from SmolCoder.src.prompting_strategy import PromptingStrategy
 from SmolCoder.src.toolkit import Toolkit
 
 # Constants for token keywords
-QUESTION_PREFIX = "Question:"
-THOUGHT_PREFIX = "Thought:"
-ACTION_PREFIX = "Action:"
-OBSERVATION_PREFIX = "Observation:"
+SYSPROMPT_TOKEN = "[Sysprompt]"
+QUESTION_TOKEN = "[Question]"
+THOUGHT_TOKEN = "[Thought]"
+ACTION_TOKEN = "[Action]"
+OBS_TOKEN = "[Observation]"
 
 class MetaToken(ABC):
     @abstractmethod
-    def match(cls, text: str) -> Union['MetaToken', None]:
+    def match(cls, text: str) -> Tuple[Union['MetaToken', None], int]:
         pass
     
     @abstractmethod
@@ -26,44 +25,55 @@ class SysPrompt(MetaToken):
         self.content = content
 
     @classmethod
-    def match(cls, text: str) -> Union['SysPrompt', None]:
-        # SysPrompt matching logic should be handled separately by the tokenizer since it relies on the prompting strategy
-        return None
+    def match(cls, text: str) -> Tuple[Union['SysPrompt', None], int]:
+        pattern = re.escape(SYSPROMPT_TOKEN) + r"(.*?)" + re.escape(SYSPROMPT_TOKEN)
+        match = re.match(pattern, text, re.DOTALL)
+        if match:
+            content = match.group(1)
+            return cls(content), match.end()
+        return None, -1
 
     def unparse(self) -> str:
-        return self.content
+        return f"{SYSPROMPT_TOKEN}{self.content}{SYSPROMPT_TOKEN}"
 
 class Question(MetaToken):
     def __init__(self, content: str) -> None:
         self.content = content
 
     @classmethod
-    def match(cls, text: str) -> Union['Question', None]:
-        if text.startswith(QUESTION_PREFIX):
-            question_end = text.find(THOUGHT_PREFIX)
-            if question_end != -1:
-                content = text[len(QUESTION_PREFIX):question_end].strip()
-            else:
-                content = text[len(QUESTION_PREFIX):].strip()
-            return cls(content)
-        return None
+    def match(cls, text: str) -> Tuple[Union['Question', None], int]:
+        pattern = re.escape(QUESTION_TOKEN) + r"(.*?)(?=" + r"|".join([
+            re.escape(SYSPROMPT_TOKEN),
+            re.escape(THOUGHT_TOKEN),
+            re.escape(ACTION_TOKEN),
+            re.escape(OBS_TOKEN),
+            r"$"
+        ]) + r")"
+        match = re.match(pattern, text, re.DOTALL)
+        if match:
+            content = match.group(1)
+            return cls(content), match.end()
+        return None, -1
 
     def unparse(self) -> str:
-        return f"{QUESTION_PREFIX} {self.content}"
+        return f"{QUESTION_TOKEN}{self.content}"
 
 class Thought(MetaToken):
     def __init__(self, content: str) -> None:
         self.content = content
 
     @classmethod
-    def match(cls, text: str) -> Union['Thought', None]:
-        match = re.match(rf"{THOUGHT_PREFIX} (.+?)(?=({ACTION_PREFIX}|$))", text, re.DOTALL)
+    def match(cls, text: str) -> Tuple[Union['Thought', None], int]:
+        text = text.strip()
+        match = re.match(rf"{re.escape(THOUGHT_TOKEN)}(.+?)(?={re.escape(ACTION_TOKEN)}|$)", text, re.DOTALL)
         if match:
-            return cls(content=match.group(1).strip())
-        return None
+            content = match.group(1).strip()
+            pointer = match.end()
+            return cls(content=content), pointer
+        return None, -1
 
     def unparse(self) -> str:
-        return f"{THOUGHT_PREFIX} {self.content}"
+        return f"{THOUGHT_TOKEN}{self.content}"
 
 class Action(MetaToken):
     def __init__(self, tool_name: str, input_variables: List[str]) -> None:
@@ -76,17 +86,21 @@ class Action(MetaToken):
         return self.tool_name == other.tool_name and self.input_variables == other.input_variables
 
     @classmethod
-    def match(cls, text: str) -> Union['Action', None]:
-        match = re.match(rf"{ACTION_PREFIX} ([\w_]+)\[(.*?)\](?=({OBSERVATION_PREFIX}|$))", text, re.DOTALL)
+    def match(cls, text: str) -> Tuple[Union['Action', None], int]:
+        match = re.match(rf"{re.escape(ACTION_TOKEN)}\s*([\w_]+)\[(.*?)\](?={re.escape(OBS_TOKEN)}|$)", text, re.DOTALL)
         if match:
-            tool_name = match.group(1).strip()
-            input_variables = [var.strip() for var in match.group(2).strip().split(',')] if match.group(2).strip() else []
-            return cls(tool_name=tool_name, input_variables=input_variables)
-        return None
+            tool_name = match.group(1)
+            if tool_name == "Finish":
+                input_variables = [match.group(2)]
+            else:
+                input_variables = [var.strip() for var in match.group(2).strip().split(',')] if match.group(2).strip() else []
+            pointer = match.end()
+            return cls(tool_name=tool_name, input_variables=input_variables), pointer
+        return None, -1
 
     def unparse(self) -> str:
         input_vars = ", ".join(self.input_variables)
-        return f"{ACTION_PREFIX} {self.tool_name}[{input_vars}]"
+        return f"{ACTION_TOKEN}{self.tool_name}[{input_vars}]"
 
     def unpack(self) -> Tuple[str, List[str]]:
         return self.tool_name, self.input_variables
@@ -98,44 +112,43 @@ class Observation(MetaToken):
 
     @classmethod
     def match(cls, text: str) -> Union['Observation', None]:
-        match = re.match(rf"{OBSERVATION_PREFIX} (.+?)(?=({THOUGHT_PREFIX}|{ACTION_PREFIX}|$))", text, re.DOTALL)
+        match = re.match(rf"{re.escape(OBS_TOKEN)}(.+?)(?={re.escape(THOUGHT_TOKEN)}|{re.escape(ACTION_TOKEN)}|$)", text, re.DOTALL)
         if match:
-            return cls(content=match.group(1).strip())
-        return None
+            content = match.group(1).strip()
+            pointer = match.end()
+            return cls(content=content), pointer
+        return None, -1
 
     def unparse(self) -> str:
-        return f"{OBSERVATION_PREFIX} {self.content}"
+        return f"{OBS_TOKEN}{self.content}"
 
 class MetaTokenizer:
     
-    def __init__(self, tool_kit: Toolkit, prompting_strategy: PromptingStrategy) -> None:
-        self.sysprompt_token = self._get_sysprompt_token(prompting_strategy)
+    def __init__(self, tool_kit: Toolkit) -> None:
         self.possible_action_token_names = tool_kit.get_possible_actions()
-
-    def _get_sysprompt_token(self, prompting_strategy: PromptingStrategy) -> SysPrompt:
-        return SysPrompt(content=prompting_strategy.sysprompt) #TODO: this can be made much easier. Make Sysprompt into Parantheses [sys] [/sys] 
 
     def tokenize(self, trajectory: str) -> List[MetaToken]:
         token_stream = []
 
-        # Match SysPrompt Token
-        sys_prompt_length = len(self.sysprompt_token.content)
-        expected_sysprompt = self.sysprompt_token.content
-        if trajectory.startswith(expected_sysprompt):
-            token_stream.append(self.sysprompt_token)
-            trajectory = trajectory[sys_prompt_length:].strip()
+        # Handle sysprompt token separately
+        sys_prompt_token, pointer = SysPrompt.match(trajectory)
+        if sys_prompt_token:
+            token_stream.append(sys_prompt_token)
+            trajectory = trajectory[pointer:]
 
+        # normalize trajectory
         trajectory = trajectory.replace("\n", "")
 
         while trajectory:
+            trajectory = trajectory.strip()
             for token_class in [Question, Thought, Action, Observation]:
-                token = token_class.match(trajectory)
+                token, pointer = token_class.match(trajectory)
                 if token:
                     token_stream.append(token)
-                    trajectory = trajectory[len(token.unparse()):].strip()  # Adjusting the length accordingly
+                    trajectory = trajectory[pointer:].strip()
                     break
             else:
-                break  # If no tokens match, exit the loop
+                break
 
         return token_stream
     

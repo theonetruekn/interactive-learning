@@ -37,7 +37,7 @@ class SmolCoder:
                                                            toolkit=toolkit, 
                                                            mode=mode
                                                            )
-        self.meta_tokenizer = MetaTokenizer(toolkit, self.prompting_strategy)
+        self.meta_tokenizer = MetaTokenizer(toolkit)
         self.token_stream: List[MetaToken] = [] # this saves the tokens (Action, Thought, Observation, ...)
         self._history = [] # this saves the history of the trajectory
 
