@@ -52,7 +52,7 @@ class ReAct(PromptingStrategy):
         else:
             raise ValueError("The Mode: " + str(self._mode) + " is not a valid mode for ReAct. ")
 
-        sysprompt = prompt + (
+        sysprompt = sysprompt + (
             "Try to think step for step, do NOT take steps that are too big.\n"
             "To do this, you will interleave Thought, Action, and Observation steps.\n"
             "Thought can reason about the current situation.\n\n" 
