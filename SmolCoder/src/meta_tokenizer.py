@@ -106,7 +106,7 @@ class Action(MetaToken):
         match = re.match(rf"{re.escape(ACTION_TOKEN)}\s*([\w_]+)\[(.*?)\](?={re.escape(OBS_TOKEN)}|$)", text, re.DOTALL)
         if match:
             tool_name = match.group(1)
-            if tool_name == "Finish":
+            if tool_name == "Finish" or tool_name == "Human_Interaction":
                 input_variables = [match.group(2)]
             else:
                 input_variables = [var.strip() for var in match.group(2).strip().split(',')] if match.group(2).strip() else []

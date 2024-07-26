@@ -37,7 +37,7 @@ class AgentWrapper():
                                mode=self.mode
                               )
         
-        result = smol_coder("Question: " + str(row_input["problem_statement"]))
+        result = smol_coder("[Question]" + str(row_input["problem_statement"]))
         
         if self.logging_enabled:
             print("LOGGING: Finished the Agent with the following as return: " + str(result))

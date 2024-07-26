@@ -44,7 +44,7 @@ class ReAct(PromptingStrategy):
         sysprompt = self.SYSPROMPT_TOKEN
         
         if self._mode == 0:
-            sysprompt += "You will be given a description of a `github issue` and your task is, to solve this issue, first you should use tools to investiaget the repo to find the sectio where the error occurs and then you should replace this section with the correct code.\n\n"
+            sysprompt += "You will be given a description of a `github issue` and your task is, to solve this issue, first you should use tools to investiaget the repo to find the section where the error occurs and then you should replace this section with the correct code.\n\n"
         elif self._mode == 1:
             sysprompt += "You will be given a description of a `github issue` and your task is, to reproduce this issue by using the available tools to you.\n\n"
         elif self._mode == 2:
@@ -62,13 +62,13 @@ class ReAct(PromptingStrategy):
         sysprompt += self.toolkit.pretty_print_tools()
         sysprompt += "\n\nInput variables of the tools do not need quotation marks around them. In addition, do NOT use the `finish` tool before having made all changes to remedy the issue.\n\n"
 
-        sysprompt += (
-                "The following is an example on how you should act:\n"
-                "--------------"
-                f"{FEW_SHOT_EXAMPLE}"
-                "--------------"
-                "\n\n"
-        )
+       # sysprompt += (
+        #        "The following is an example on how you should act:\n"
+         #       "--------------"
+        #        f"{FEW_SHOT_EXAMPLE}"
+        #        "--------------"
+        #        "\n\n"
+        #)
 
         sysprompt += (
             "The Example is now finished."
