@@ -21,7 +21,7 @@ class HumanInteraction(Tool):
     def example(self) -> str:
         return f'{self.name}[asking_for_help_message]'
 
-    def __call__(self, input_variables: List[str]) -> str:
+    def __call__(self, input_variables: List[str], cwd) -> str:
         
         try:
             human_help = input(input_variables[0])
