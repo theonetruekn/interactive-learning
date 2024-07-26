@@ -5,8 +5,11 @@ import os
 import validators
 import shutil
 from pathlib import Path
-from SmolCoder.src.agent import SmolCoder
+from datetime import datetime
+import logging
 
+from SmolCoder.src.agent import SmolCoder
+from SmolCoder.src.llm_wrapper import LLM
 
 # This class is a wrapper for the MolCoder Agent, it is responsible for setting up the required enviroment and cleaning up. 
 # Its job is the following:
@@ -15,13 +18,28 @@ from SmolCoder.src.agent import SmolCoder
 # - Stages our changes.
 # - Calculates the git diff, which we return.
 class AgentWrapper():
-    def __init__(self, name, toolkit, mode, model, working_directory="repos", logging=True):
-        self.name = name
+    def __init__(self, agent_name, toolkit, mode, model : str, working_directory="repos", logging_enabled=True):
+        self.name = agent_name
         self.working_directory = working_directory
-        self.logging_enabled = logging
+        self.logging_enabled = logging_enabled # At the moment, not properly implemented
         self.toolkit = toolkit
         self.mode = mode
-        self.model = model
+        
+        # For logging purpose
+        #------
+        # ensure logging folder exists
+        log_dir = Path('logs')
+        log_dir.mkdir(exist_ok=True)
+        
+        # generate a logging file
+        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_file = log_dir / f'{self.name}_{current_time}.log'
+
+        logging.basicConfig(filename=log_file, filemode='w', level=logging.DEBUG,
+                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.logger = logging.getLogger(__name__)
+
+        self.model = LLM(model, self.logger)
 
         if not os.path.isdir(working_directory):
             os.makedirs(working_directory)
@@ -34,7 +52,8 @@ class AgentWrapper():
         smol_coder = SmolCoder(model=self.model, 
                                codebase_dir=Path(repo_dir), 
                                toolkit=self.toolkit, 
-                               mode=self.mode
+                               mode=self.mode,
+                               logger=self.logger
                               )
         
         result = smol_coder("[Question]" + str(row_input["problem_statement"]))

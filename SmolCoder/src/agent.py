@@ -1,4 +1,3 @@
-import logging
 
 from os import execv
 from pathlib import Path
@@ -18,7 +17,7 @@ class SmolCoder:
     """
     This class handles the communication between the prompting strategy and the agent-computer-interface.
     """
-    def __init__(self, model:LLM, codebase_dir:Path, toolkit:Toolkit, prompting_strategy:str = "ReAct", mode:int = 2) -> None:
+    def __init__(self, model:LLM, codebase_dir:Path, toolkit:Toolkit, logger, prompting_strategy:str = "ReAct", mode:int = 2) -> None:
         if prompting_strategy != "ReAct":
             raise NotImplementedError("Currently, only 'ReAct' is a valid answer.")
         
@@ -26,11 +25,7 @@ class SmolCoder:
         Args:
             mode (int): 0 for github_issue_mode, 1 for repoduce_error_mode, 2 for ReAct Mode
         """
-        log_file = Path('smolcoder.log')
-        logging.basicConfig(filename=log_file, filemode='a', level=logging.DEBUG,
-                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        self.logger = logging.getLogger(__name__)
-
+        self.logger = logger
         self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit, logger=self.logger)
         self.prompting_strategy = PromptingStrategy.create(model, 
                                                            strategy=prompting_strategy, 
