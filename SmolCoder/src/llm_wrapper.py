@@ -2,7 +2,8 @@ import requests
 import json
 
 class LLM:
-    def __init__(self, model: str, url='http://localhost:11434/api/generate', raw : bool = False):
+    def __init__(self, model: str, logger, url='http://localhost:11434/api/generate', raw : bool = False):
+        self.logger = logger
         self.model = model
         self.url = url
         self.raw = raw # if enabled will not return markdown, this hsouldb e set to true when using llam3 and to false if using phi3
@@ -25,12 +26,18 @@ class LLM:
             raise ValueError(f"Request failed: {e}")
 
         response_text = ""
+        token_count = 0
         try:
             for line in response.iter_lines():
                 if line:
                     decoded_line = line.decode('utf-8')
                     res_json = json.loads(decoded_line)
                     response_text += res_json.get("response", "")
+                    # Check if the streaming is done and we received the final response object
+                    if res_json.get("done", False):
+                        token_count = res_json.get("eval_count", 0)
+                        break
+
                     # for DEBUG
                     if stop_token and stop_token in response_text:
                         stop_index = response_text.find(stop_token)
@@ -41,6 +48,7 @@ class LLM:
             print(f"Response content: {response.content}")
             raise ValueError
 
+        self.logger.info(f"Number of tokens in reponse: {str(token_count)}")
         return response_text
 
 
