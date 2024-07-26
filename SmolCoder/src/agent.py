@@ -109,8 +109,9 @@ class SmolCoder:
             self.logger.debug("Current action_stream: " + token_str_test + "\n")
             self.logger.debug("Last token: " + str(action))
             self.logger.debug("-------\n")
-
-            self.logger.debug("\nLast Action is the same as current action?: ", action == last_action, "\n")
+            
+            if action == last_action:
+                self.logger.debug(f"\nThe Last Action is the same as current action: {str(action)}\n")
             # ------------------------------------------------------------------
             
 
