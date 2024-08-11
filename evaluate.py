@@ -52,18 +52,32 @@ if __name__ == "__main__":
     parser.add_argument('--output_file', type=str, default="predictions.json", help="File path towards the output file, should be a '.json'.")
     parser.add_argument('--logging_enabled', type=bool, default=False, help="If logging for the agent should be enabled.")
     parser.add_argument('--working_directory', type=str, default="repos", help="Working directory of the Agent, here the github repository will be downloaded to.")
+    parser.add_argument('--openai_key', type=str, default=None, help="Set it to your openai key, if you want to use it.")
 
     args = parser.parse_args()
 
     df = pd.read_json(os.path.abspath(args.dataset_location))
-    agent = AgentWrapper(
-                     agent_name="SmolCoder",
-                     toolkit=toolkit,
-                     mode=0,
-                     model=args.model_name,
-                     working_directory=args.working_directory,
-                     logging_enabled=args.logging_enabled
-                    )
+
+    if not args.openai_key:
+        agent = AgentWrapper(
+                         agent_name="SmolCoder",
+                         toolkit=toolkit,
+                         mode=0,
+                         model=args.model_name,
+                         working_directory=args.working_directory,
+                         logging_enabled=args.logging_enabled
+                        )
+    else:       
+        agent = AgentWrapper(
+                         agent_name="SmolCoder",
+                         toolkit=toolkit,
+                         mode=0,
+                         model="gpt4-o-mini",
+                         working_directory=args.working_directory,
+                         logging_enabled=args.logging_enabled,
+                         openai=(True, args.openai_key)
+                        )
+
 
     # Check if checkpoint file exists and read the last processed index
     try:

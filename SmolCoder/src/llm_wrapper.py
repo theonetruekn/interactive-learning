@@ -1,56 +1,99 @@
 import requests
 import json
+import openai
 
 class LLM:
-    def __init__(self, model: str, logger, url='http://localhost:11434/api/generate', raw : bool = False):
+    def __init__(self, model: str, logger, openai, url='http://localhost:11434/api/generate', raw : bool = False):
         self.logger = logger
         self.model = model
         self.url = url
         self.raw = raw # if enabled will not return markdown, this hsouldb e set to true when using llam3 and to false if using phi3
-
-    def query_completion(self, prompt, stop_token=None, seed=42):
-        data = {
-            "model": self.model,
-            "prompt": prompt,
-            "stream": True,
-            "raw": self.raw, # needs to be off for phi3
-            "options": {"cache_prompt": True, "seed": seed}
-        }
-
-        json_data = json.dumps(data)
-
-        try:
-            response = requests.post(self.url, data=json_data, headers={'Content-Type': 'application/json'})
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            raise ValueError(f"Request failed: {e}")
-
-        response_text = ""
-        token_count = 0
-        try:
-            for line in response.iter_lines():
-                if line:
-                    decoded_line = line.decode('utf-8')
-                    res_json = json.loads(decoded_line)
-                    response_text += res_json.get("response", "")
-                    # Check if the streaming is done and we received the final response object
-                    if res_json.get("done", False):
-                        token_count = res_json.get("eval_count", 0)
-                        break
-
-                    # for DEBUG
-                    if stop_token and stop_token in response_text:
-                        stop_index = response_text.find(stop_token)
-                        response_text = response_text[:stop_index + len(stop_token)]
-                        break
-        except json.JSONDecodeError as e:
-            print(f"JSON decoding failed: {e}")
-            print(f"Response content: {response.content}")
-            raise ValueError
+        self.openai = openai
         
-        if self.logger:
-            self.logger.info(f"Number of tokens in reponse: {str(token_count)}")
-        return response_text
+    def query_completion(self, prompt, stop_token=None, seed=42):
+        openai_enabled = self.openai[0]
+        openai_key = self.openai[1]
+
+        if not openai_enabled:
+            data = {
+                "model": self.model,
+                "prompt": prompt,
+                "stream": True,
+                "raw": self.raw, # needs to be off for phi3
+                "options": {"cache_prompt": True, "seed": seed, "num_predict": 1000}
+            }
+
+            json_data = json.dumps(data)
+
+            try:
+                response = requests.post(self.url, data=json_data, headers={'Content-Type': 'application/json'})
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                raise ValueError(f"Request failed: {e}")
+
+            response_text = ""
+            token_count = 0
+            try:
+                for line in response.iter_lines():
+                    if line:
+                        decoded_line = line.decode('utf-8')
+                        res_json = json.loads(decoded_line)
+                        response_text += res_json.get("response", "")
+                        # Check if the streaming is done and we received the final response object
+                        if res_json.get("done", False):
+                            token_count = res_json.get("eval_count", 0)
+                            break
+
+                        # for DEBUG
+                        if stop_token and stop_token in response_text:
+                            stop_index = response_text.find(stop_token)
+                            response_text = response_text[:stop_index + len(stop_token)]
+                            break
+            except json.JSONDecodeError as e:
+                print(f"JSON decoding failed: {e}")
+                print(f"Response content: {response.content}")
+                raise ValueError
+            
+            if self.logger:
+                self.logger.info(f"Number of tokens in reponse: {str(token_count)}")
+            return response_text
+        
+        # if we use openai
+        else:
+            try:
+                openai.api_key = openai_key
+
+                response = openai.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                    stop=stop_token,
+                    max_tokens=1500,
+                    stream=True  # Enables streaming mode
+                )
+
+                response_text = ""
+                token_count = 0
+
+                for chunk in response:
+                    if 'choices' in chunk:
+                        content = chunk['choices'][0]['delta'].get('content', '')
+                        response_text += content
+
+                        # If a stop token is provided and found, stop early
+                        if stop_token and stop_token in response_text:
+                            response_text = response_text.split(stop_token)[0] + stop_token
+                            break
+
+                # Count tokens in response
+                token_count = len(response_text.split())
+
+                if self.logger:
+                    self.logger.info(f"Number of tokens in response: {str(token_count)}")
+
+                return response_text
+
+            except Exception as e:
+                raise ValueError(f"Request failed: {e}")
 
 
 if __name__ == "__main__":
