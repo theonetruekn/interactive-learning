@@ -47,8 +47,9 @@ class LLM:
             print(f"JSON decoding failed: {e}")
             print(f"Response content: {response.content}")
             raise ValueError
-
-        self.logger.info(f"Number of tokens in reponse: {str(token_count)}")
+        
+        if self.logger:
+            self.logger.info(f"Number of tokens in reponse: {str(token_count)}")
         return response_text
 
 

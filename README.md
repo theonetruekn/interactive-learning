@@ -52,6 +52,7 @@ python -m swebench.harness.run_evaluation \
 
 **Run the SWE-Bench evaluation**
 1. Get your predictions by running the appropiate part of the `Evaluation.ipynb`, make sure to choose the correct dataset (either `swe-bench.json` for the full dataset or `swe-bench-lite.json` for a smaller version).
+Alternatively you can also run the `evaluation.py` inside the `Evaluation` folder.
 2. To evaluate the predictions, navigate to the SWE-Bench folder
 ```
 cd Evaluation
