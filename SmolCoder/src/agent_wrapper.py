@@ -37,7 +37,12 @@ class AgentWrapper():
 
         logging.basicConfig(filename=log_file, filemode='w', level=logging.DEBUG,
                             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        self.logger = logging.getLogger(__name__)
+
+        # Only when the logger is enabled do we want to set it
+        if self.logging_enabled:
+            self.logger = logging.getLogger(__name__)
+        else:
+            self.logger = None
 
         self.model = LLM(model, self.logger)
 

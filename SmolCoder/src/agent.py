@@ -36,11 +36,12 @@ class SmolCoder:
         self.token_stream: List[MetaToken] = [] # this saves the tokens (Action, Thought, Observation, ...)
         self._history = [] # this saves the history of the trajectory
         
-        self.logger.debug("-------------------------------------------------------------------------------------------")
-        self.logger.debug("-------------------------------------------------------------------------------------------")
-        self.logger.debug("Started new SmolCoder Run")
-        self.logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
-                     model, codebase_dir, toolkit, prompting_strategy)
+        if self.logger is not None:
+            self.logger.debug("-------------------------------------------------------------------------------------------")
+            self.logger.debug("-------------------------------------------------------------------------------------------")
+            self.logger.debug("Started new SmolCoder Run")
+            self.logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
+                         model, codebase_dir, toolkit, prompting_strategy)
     
     def inspect_history(self, n:Optional[int] = None) -> str:
         if not n:
@@ -70,20 +71,26 @@ class SmolCoder:
         if start_cwd != "":
             self.ACI._change_cwd(start_cwd)
 
-        self.logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
+        
+        if self.logger is not None:
+            self.logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
+        
         trajectory = ""
         last_action = None
 
         for i in range(max_calls):
-            self.logger.debug("Call iteration: %d", i)
+            if self.logger:
+                self.logger.debug("Call iteration: %d", i)
             if i == 0:
                 trajectory = self.prompting_strategy(prompt=userprompt, begin=True)
             else:
                 trajectory = self.prompting_strategy(prompt=trajectory, begin=False)
+            
 
-            print("\n------------\n")
-            print(trajectory)
-            print("\n------------\n")
+            if self.logger is not None:
+                print("\n------------\n")
+                print(trajectory)
+                print("\n------------\n")
 
             self.token_stream = self.meta_tokenizer.tokenize(trajectory)
             assert self.meta_tokenizer.is_valid_traj(trajectory), f"{self.token_stream}"
@@ -99,14 +106,16 @@ class SmolCoder:
             for curr_token in self.token_stream:
                 token_str_test += str(curr_token) + ", "
             token_str_test += ")"
-           
-            self.logger.debug("\n-------")
-            self.logger.debug("Current action_stream: " + token_str_test + "\n")
-            self.logger.debug("Last token: " + str(action))
-            self.logger.debug("-------\n")
+
+            if self.logger is not None:
+                self.logger.debug("\n-------")
+                self.logger.debug("Current action_stream: " + token_str_test + "\n")
+                self.logger.debug("Last token: " + str(action))
+                self.logger.debug("-------\n")
             
-            if action == last_action:
-                self.logger.debug(f"\nThe Last Action is the same as current action: {str(action)}\n")
+            if self.logger is not None:
+                if action == last_action:
+                    self.logger.debug(f"\nThe Last Action is the same as current action: {str(action)}\n")
             # ------------------------------------------------------------------
             
 
@@ -132,8 +141,10 @@ Do not use any special formatation such as markdown.
             
             # If we repeat an action, we backtrack
             if last_action and action == last_action:
-                self.logger.warning("Detected repeated action. Attempting backtracking.")
-                print("Detected repeated action.")
+                
+                if self.logger is not None:
+                    self.logger.warning("Detected repeated action. Attempting backtracking.")
+                    print("Detected repeated action.")
                 assert self._backtrack_action(), "Something went wrong while backtracking"
                 trajectory = self.meta_tokenizer.unparse(self.token_stream)
 
@@ -141,12 +152,13 @@ Do not use any special formatation such as markdown.
            
             # For debugging purpose, only           
             if isinstance(action, Action):
-                self.logger.debug("------")
-                self.logger.debug("action: " + str(action.tool_name))
+                if self.logger is not None:
+                    self.logger.debug("------")
+                    self.logger.debug("action: " + str(action.tool_name))
 
-                self.logger.debug("action args: " + str(action.input_variables))
-                self.logger.debug("------")
-                
+                    self.logger.debug("action args: " + str(action.input_variables))
+                    self.logger.debug("------")
+                    
 
             tool_name, input_variables = action.unpack()
             # If the tool-use fails, we backtrack
@@ -167,6 +179,7 @@ Do not use any special formatation such as markdown.
 
             if self.ACI.finished:
                 break
-
-        self.logger.info("Final trajectory: %s", trajectory)
+        
+        if self.logger is not None:
+            self.logger.info("Final trajectory: %s", trajectory)
         return trajectory

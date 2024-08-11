@@ -207,7 +207,7 @@ class MetaTokenizer:
         while index < len(token_stream):
             expected_type = expected_types[(index - 2) % 3]
             if not isinstance(token_stream[index], expected_type):
-                print("Logger: When validating the trajectory, a unexspected token was found: expected: '" + str(expected_type) + "' but got: '" + str(token_stream[index]) + "'.")
+                print("Logger: When validating the trajectory, a unexpected token was found: expected: '" + str(expected_type) + "' but got: '" + str(token_stream[index]) + "'.")
                 
                 token_str_test = "("
                 for curr_token in token_stream:
