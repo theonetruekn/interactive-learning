@@ -20,7 +20,7 @@ class LLM:
                 "prompt": prompt,
                 "stream": True,
                 "raw": self.raw, # needs to be off for phi3
-                "options": {"cache_prompt": True, "seed": seed}
+                "options": {"cache_prompt": True, "seed": seed, "num_predict": 1000}
             }
 
             json_data = json.dumps(data)
@@ -61,7 +61,9 @@ class LLM:
         # if we use openai
         else:
             try:
-                response = openai.ChatCompletion.create(
+                openai.api_key = openai_key
+
+                response = openai.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[{"role": "user", "content": prompt}],
                     stop=stop_token,
