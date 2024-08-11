@@ -18,7 +18,8 @@ from SmolCoder.src.llm_wrapper import LLM
 # - Stages our changes.
 # - Calculates the git diff, which we return.
 class AgentWrapper():
-    def __init__(self, agent_name, toolkit, mode, model : str, working_directory="repos", logging_enabled=True):
+    # openai: if you want to use it set first element of tuple to true and second paremter to the openaikey
+    def __init__(self, agent_name, toolkit, mode, model : str, working_directory="repos", logging_enabled=True, openai=(False, "")):
         self.name = agent_name
         self.working_directory = working_directory
         self.logging_enabled = logging_enabled # At the moment, not properly implemented
@@ -44,7 +45,7 @@ class AgentWrapper():
         else:
             self.logger = None
 
-        self.model = LLM(model, self.logger)
+        self.model = LLM(model, self.logger, openai)
 
         if not os.path.isdir(working_directory):
             os.makedirs(working_directory)
