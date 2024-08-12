@@ -71,8 +71,9 @@ python -m swebench.harness.run_evaluation \
 
 ### Run SWE-Bench-Evaluation on "BwUniCluster" or other Slurm Batch System
 
-0. Connect and login in your server.  
-1. Create a new file `vi evaluate.sh` with following content:  
+0. Connect and login in your server.
+1. Clone this repository and put an `ollama` [binary](https://github.com/ollama/ollama/releases) into the folder.
+2. Create a new file `vi evaluate.sh` with following content:  
 ```
 #!/bin/bash
 #SBATCH --job-name=evaluate_gemma_2
