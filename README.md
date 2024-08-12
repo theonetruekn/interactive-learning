@@ -69,6 +69,32 @@ python -m swebench.harness.run_evaluation \
 ```
 4. Your should find a `json` report, listing the evaluation result of your predictions,with `YOUR_ID` inside the `SWE-bench` directory.
 
+### Run SWE-Bench-Evaluation on "BwUniCluster" or other Slurm Batch System
+
+0. Connect and login in your server.  
+1. Create a new file `vi evaluate.sh` with following content:  
+```
+#!/bin/bash
+#SBATCH --job-name=evaluate_gemma_2
+#SBATCH --mem 20000
+#SBATCH --nodes 1
+#SBATCH --time 600
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+module load devel/miniconda
+set CUDA_VISIBLE_DEVICES
+./ollama serve
+./ollama run gemma2
+python evaluate.py --logging_enabled=True --model_name="gemma2" --output_file="prediction_gemma2B.json"
+```
+- Set the memory depending on the model, e.g. 2B memory <= 10GB, 8B memory <= 20GB  
+- Remove the line `set CUDA_VISIBLE_DEVICES` if you want to use cuda.  
+- Modify `job-name`, `model_name`, `output_file`  
+2. Queue the job with `sbatch -p single evaluate.sh`  
+3. To check the progress: `squeue`  
+
+For more on Slurm jobs, check this [website out](https://help.jasmin.ac.uk/docs/batch-computing/how-to-monitor-slurm-jobs/). 
+
 ## Resources
 
 **Very Relevant Papers:**

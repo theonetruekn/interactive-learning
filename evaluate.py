@@ -6,6 +6,7 @@ import json
 from tqdm import tqdm
 import argparse
 import pandas as pd
+from datetime import datetime
 
 # So that it recognizes the SmolCoder libary
 import sys
@@ -39,7 +40,6 @@ human_interaction = HumanInteraction()
 
 toolkit = Toolkit([list_classes, list_files, replace_method, show_method, move_folder, finish])
 
-checkpoint_file = 'checkpoint.txt'
 resume_index = 0
 
 if __name__ == "__main__":
@@ -57,6 +57,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     df = pd.read_json(os.path.abspath(args.dataset_location))
+
+    # We need to give the file a distinct names, if we run multiple instances at once
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    checkpoint_file = f"checkpoint_{args.model_name}_{current_time}.txt"
 
     if not args.openai_key:
         agent = AgentWrapper(
