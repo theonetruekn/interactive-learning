@@ -80,18 +80,20 @@ python -m swebench.harness.run_evaluation \
 #SBATCH --job-name=evaluate_gemma_2
 #SBATCH --mem 20000
 #SBATCH --nodes 1
-#SBATCH --time 600
+#SBATCH --time 5
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 module load devel/miniconda
 set CUDA_VISIBLE_DEVICES=""
-./ollama serve
-./ollama run gemma2
+OLLAMA_LLM_LIBRARY="cpu_avx2" ./ollama-linux-amd64 serve &
+./ollama-linux-amd64 run gemma2 &
+sleep 60
 python evaluate.py --logging_enabled=True --model_name="gemma2" --output_file="prediction_gemma2B.json"
 ```
 - Set the memory depending on the model, e.g. 2B memory <= 10GB, 8B memory <= 20GB  
-- Remove the line `set CUDA_VISIBLE_DEVICES` if you want to use cuda.  
-- Modify `job-name`, `model_name`, `output_file`  
+- Remove the line `set CUDA_VISIBLE_DEVICES` and remvoe `OLLAMA_LLM_LIBRARY="cpu_avx2"` if you want to use cuda.  
+- Modify `job-name`, `model_name`, `output_file`
+- The `sleep 60` is because, downlaoding the model takes some time.
 2. Queue the job with `sbatch -p single evaluate.sh`  
 3. To check the progress: `squeue`  
 
