@@ -51,6 +51,7 @@ python -m swebench.harness.run_evaluation \
 
 
 **Run the SWE-Bench evaluation**
+
 0. Install the required python packages, I would recommend doing it using conda: `conda create --name <env> --file requirements.txt` and activate it `conda activate <env>`.
 1. Get your predictions by running the appropiate part of the `Evaluation.ipynb`, make sure to choose the correct dataset (either `swe-bench.json` for the full dataset or `swe-bench-lite.json` for a smaller version).
 Alternatively you can also run the `evaluation.py` inside the `Evaluation` folder.
