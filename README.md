@@ -83,7 +83,7 @@ python -m swebench.harness.run_evaluation \
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 module load devel/miniconda
-set CUDA_VISIBLE_DEVICES
+set CUDA_VISIBLE_DEVICES=""
 ./ollama serve
 ./ollama run gemma2
 python evaluate.py --logging_enabled=True --model_name="gemma2" --output_file="prediction_gemma2B.json"
