@@ -19,12 +19,14 @@ from SmolCoder.src.llm_wrapper import LLM
 # - Calculates the git diff, which we return.
 class AgentWrapper():
     # openai: if you want to use it set first element of tuple to true and second paremter to the openaikey
-    def __init__(self, agent_name, toolkit, mode, model : str, working_directory="repos", logging_enabled=True, openai=(False, "")):
+    # dummy_model: if actiavetd uses a stub instead of an model
+    def __init__(self, agent_name, toolkit, mode, model : str, dummy_model: bool, working_directory="repos", logging_enabled=True, openai=(False, "")):
         self.name = agent_name
         self.working_directory = working_directory
         self.logging_enabled = logging_enabled # At the moment, not properly implemented
         self.toolkit = toolkit
         self.mode = mode
+        self.dummy_model = dummy_model
         
         # For logging purpose
         #------
@@ -55,14 +57,17 @@ class AgentWrapper():
         repo_dir = self._clone_repo(row_input["repo"], row_input["base_commit"])
 
         # Creating our Agent
-        smol_coder = SmolCoder(model=self.model, 
-                               codebase_dir=Path(repo_dir), 
-                               toolkit=self.toolkit, 
-                               mode=self.mode,
-                               logger=self.logger
+        if not self.dummy_model:
+            agent = SmolCoder(model=self.model, 
+                              codebase_dir=Path(repo_dir), 
+                              toolkit=self.toolkit, 
+                              mode=self.mode,
+                              logger=self.logger
                               )
-        
-        result = smol_coder("[Question]" + str(row_input["problem_statement"]))
+        else:
+            agent = AgentStub(self.working_directory)
+
+        result = agent("[Question]" + str(row_input["problem_statement"]))
         
         if self.logging_enabled:
             print("LOGGING: Finished the Agent with the following as return: " + str(result))
@@ -106,8 +111,7 @@ class AgentWrapper():
 
 
 
-
-# DEPCREATED
+# Used for testing purposes.
 class AgentStub():
     def __init__(self,  start_cwd):
          self.start_cwd =  start_cwd
