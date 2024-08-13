@@ -65,7 +65,7 @@ class AgentWrapper():
                               logger=self.logger
                               )
         else:
-            agent = AgentStub(self.working_directory)
+            agent = AgentStub(str(repo_dir))
 
         result = agent("[Question]" + str(row_input["problem_statement"]))
         
