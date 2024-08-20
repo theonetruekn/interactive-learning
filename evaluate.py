@@ -59,18 +59,20 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     df = pd.read_json(os.path.abspath(args.dataset_location))
-
-    # We need to give the file a distinct names, if we run multiple instances at once
-    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    checkpoint_file = f"{args.output_directory}/checkpoint_{args.model_name}_{current_time}.txt"
-
-    if not os.path.exists(args.output_directory):
-        os.makedirs(args.output_directory)
-
+    
+    # If we use the dummy_model we want to ignore 'model_name' parameter
     if args.dummy_model:
         model_name = "dummy_model"
     else:
         model_name = args.model_name
+
+    # We need to give the file a distinct names, if we run multiple instances at once
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    checkpoint_file = f"{args.output_directory}/checkpoint_{model_name}_{current_time}.txt"
+
+    if not os.path.exists(args.output_directory):
+        os.makedirs(args.output_directory)
+
 
     if not args.openai_key:
         agent = AgentWrapper(
@@ -106,7 +108,7 @@ if __name__ == "__main__":
 
     if resume_index < len(df) - 1:
         # Open a file to save predictions
-        with open(f"{args.output_directory}/predictions_{args.model_name}_{current_time}.json", 'a', encoding="utf-8-sig") as json_file:
+        with open(f"{args.output_directory}/predictions_{model_name}_{current_time}.json", 'a', encoding="utf-8-sig") as json_file:
             if resume_index == 0:
                 json_file.write('[')  # Start of JSON array
                 json_file.write('\n')
