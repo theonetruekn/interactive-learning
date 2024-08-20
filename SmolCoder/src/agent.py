@@ -124,10 +124,10 @@ class SmolCoder:
             if not isinstance(self.token_stream[-1], Action):
                 trajectory += """\n
 It looks like the current response deviates from the expected sequence of Action, Thought, Observation. Please adhere to the following format to maintain consistency:
-Thought: Reasoning which action to take to solve the task.
-Action: Always either List_Files[folder] or Move_to_Folder[new_directory] or List_Classes[file_name] or List_Methods[class_name] or Show_Method_Body[class_name,method_name] or Replace_Method[class_name,method_name,new_method] or Finish[answer]
-Observation: result of the previous Action
-Thought: next steps to take based on the previous Observation
+[Thought] Reasoning which action to take to solve the task.
+[Action] Always either List_Files[folder] or Move_to_Folder[new_directory] or List_Classes[file_name] or List_Methods[class_name] or Show_Method_Body[class_name,method_name] or Replace_Method[class_name,method_name,new_method] or Finish[answer]
+[Observation] result of the previous Action
+[Thought] next steps to take based on the previous Observation
 ...
 until Action is of type `Finish`.
 Do not use any special formatation such as markdown.

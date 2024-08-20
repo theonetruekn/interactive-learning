@@ -128,13 +128,13 @@ def get_system_call_names():
 FEW_SHOT_EXAMPLE = f"""
 StartFewShotExamples
 
-Question: psn v1.2.3 release may show wrong syscall names on x86_64 due to looking them up from a wrong/template file, unistd.h files on ARM/aarch64 work somewhat differently from x86_64.
+[Question] psn v1.2.3 release may show wrong syscall names on x86_64 due to looking them up from a wrong/template file, unistd.h files on ARM/aarch64 work somewhat differently from x86_64.
 
-Thought: First, I need to locate the section in the repository that corresponds to the Issue where the wrong syscall names are displayed. For that I should list all the files.
+[Thought] First, I need to locate the section in the repository that corresponds to the Issue where the wrong syscall names are displayed. For that I should list all the files.
 
-Action: List_Files[.]
+[Action] List_Files[.]
 
-Observation: The entries in `repos/0xtools` are:
+[Observation] The entries in `repos/0xtools` are:
 bin/
 docs/licenses/
 include/
@@ -149,46 +149,46 @@ README.md
 release.sh
 (Current Working Directory: repos)
 
-Thought: The section with the Issue will most likely be either in the `lib/0xtool` or the `src/` directory, since these two direcotires probably have the source code. I should move into the directory and then check the files in it.
+[Thought] The section with the Issue will most likely be either in the `lib/0xtool` or the `src/` directory, since these two direcotires probably have the source code. I should move into the directory and then check the files in it.
 
-Action: Move_to_Folder[lib/0xtools/]
+[Action] Move_to_Folder[lib/0xtools/]
 
-Observation: Set the current working directory to `lib/0xtools/`.
+[Observation] Set the current working directory to `lib/0xtools/`.
 (Current Working Directory: repos/lib/0xtools)
 
-Thought: Since the current working directory shows that I am in the correct directory, I should now list all the files.
+[Thought] Since the current working directory shows that I am in the correct directory, I should now list all the files.
 
-Action: List_Files[.]
+[Action] List_Files[.]
 
-Observation: The entries in `repos/0xtools/lib/0xtools/` are:
+[Observation] The entries in `repos/0xtools/lib/0xtools/` are:
 argparse.py
 psnproc.py
 psnereport.py
 (Current Working Directory: repos/lib/0xtools)
 
-Thought: Since the Issue was talking about psn we should check `psnproc.py` for problematic code.
+[Thought] Since the Issue was talking about psn we should check `psnproc.py` for problematic code.
 
-Action: List_Classes[snproc.py]
+[Action] List_Classes[snproc.py]
 
-Observation: The classes in `psnproc.py` are `ProcSource`
+[Observation] The classes in `psnproc.py` are `ProcSource`
 (Current Working Directory: repos/lib/0xtools)
 
-Thought: We know now that there exist one class named `ProcSource`, we should look up which methods the class has.
+[Thought] We know now that there exist one class named `ProcSource`, we should look up which methods the class has.
 
-Action: List_Methods[ProcSource]
+[Action] List_Methods[ProcSource]
 
-Observation: 
+[Observation] 
 Method `__init__(self, name, path, available_columns, stored_column_names, task_level=False, read_samples=lambda f: [f.read()], parse_sample=lambda self, sample: sample.split())` with docstring `{ None }`, 
 Method `set_stored_columns(self, stored_column_n)` with docstring `{ None }`,
 Method `hex_to_signed_int(self, hex_str, bit_length)` with docstring `{ None }`,
 Method `get_system_call_names()` with docstring `{ None }`
 (Current Working Directory: repos/lib/0xtools)
 
-Thought: The Issue talks about displaying the wrong syscalls, thus we should check `get_system_call_names` for more information.
+[Thought] The Issue talks about displaying the wrong syscalls, thus we should check `get_system_call_names` for more information.
 
-Action: List_Method_Body[ProcSource, get_system_call_names]
+[Action] List_Method_Body[ProcSource, get_system_call_names]
 
-Observation:
+[Observation]
 ```
 def get_system_call_names():
     psn_dir=os.path.dirname(os.path.realpath(__file__))
@@ -198,15 +198,15 @@ def get_system_call_names():
 ```
 (Current Working Directory: repos/lib/0xtools)
 
-Thought: The Issue describes that syscalls are wrongly displayed on the x86_64 platform, we should check for the different platforms and based on the platform return the correct syscalls.
+[Thought] The Issue describes that syscalls are wrongly displayed on the x86_64 platform, we should check for the different platforms and based on the platform return the correct syscalls.
 
-Action: Replace_Method[ProcSource, get_system_call_names, {NEW_METHOD}]
+[Action] Replace_Method[ProcSource, get_system_call_names, {NEW_METHOD}]
 
-Observation: Method `get_system_call_names` in class `ProcSource` replaced successfully in file `snproc.py`.
+[Observation] Method `get_system_call_names` in class `ProcSource` replaced successfully in file `snproc.py`.
 
-Thought: Since we have successfully replaced the method with the new code, the Issue should now be fixed and we can finish the execution.
+[Thought] Since we have successfully replaced the method with the new code, the Issue should now be fixed and we can finish the execution.
 
-Action: Finish["The Issue is fixed"]
+[Action] Finish["The Issue is fixed"]
 
 EndFewShotExamples
 """
