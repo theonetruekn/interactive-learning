@@ -36,7 +36,7 @@ class AgentWrapper():
         
         # generate a logging file
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        log_file = log_dir / f'{self.name}_{current_time}.log'
+        log_file = log_dir / f'{model}_{current_time}.log'
 
         logging.basicConfig(filename=log_file, filemode='w', level=logging.DEBUG,
                             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -46,8 +46,9 @@ class AgentWrapper():
             self.logger = logging.getLogger(__name__)
         else:
             self.logger = None
-
-        self.model = LLM(model, self.logger, openai)
+        
+        if not self.dummy_model:
+            self.model = LLM(model, self.logger, openai)
 
         if not os.path.isdir(working_directory):
             os.makedirs(working_directory)

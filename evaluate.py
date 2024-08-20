@@ -54,17 +54,25 @@ if __name__ == "__main__":
     parser.add_argument('--working_directory', type=str, default="repos", help="Working directory of the Agent, here the github repository will be downloaded to.")
     parser.add_argument('--openai_key', type=str, default=None, help="Set it to your openai key, if you want to use it.")
     parser.add_argument('--dummy_model', type=bool, default=False, help="If this is activated runs the script with a stub/dummy as Model.")
-    
+    parser.add_argument('--n_samples', type=int, default=500, help="Number of Samples the program should be tested on, if not set uses the whole dataset.")
+
     args = parser.parse_args()
 
     df = pd.read_json(os.path.abspath(args.dataset_location))
+    
+    # If we use the dummy_model we want to ignore 'model_name' parameter
+    if args.dummy_model:
+        model_name = "dummy_model"
+    else:
+        model_name = args.model_name
 
     # We need to give the file a distinct names, if we run multiple instances at once
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    checkpoint_file = f"{args.output_directory}/checkpoint_{args.model_name}_{current_time}.txt"
+    checkpoint_file = f"{args.output_directory}/checkpoint_{model_name}_{current_time}.txt"
 
     if not os.path.exists(args.output_directory):
         os.makedirs(args.output_directory)
+
 
     if not args.openai_key:
         agent = AgentWrapper(
@@ -74,7 +82,7 @@ if __name__ == "__main__":
                          model=args.model_name,
                          working_directory=args.working_directory,
                          logging_enabled=args.logging_enabled,
-                         dummy_model=args.dummy_model
+                         dummy_model=args.dummy_model,
                         )
     else:       
         agent = AgentWrapper(
@@ -82,9 +90,10 @@ if __name__ == "__main__":
                          toolkit=toolkit,
                          mode=0,
                          model="gpt4-o-mini",
+                         dummy_model=False,
                          working_directory=args.working_directory,
                          logging_enabled=args.logging_enabled,
-                         openai=(True, args.openai_key)
+                         openai=(True, args.openai_key),
                         )
 
 
@@ -99,12 +108,21 @@ if __name__ == "__main__":
 
     if resume_index < len(df) - 1:
         # Open a file to save predictions
-        with open(f"{args.output_directory}/predictions_{args.model_name}_{current_time}.json", 'a', encoding="utf-8-sig") as json_file:
+        with open(f"{args.output_directory}/predictions_{model_name}_{current_time}.json", 'a', encoding="utf-8-sig") as json_file:
             if resume_index == 0:
                 json_file.write('[')  # Start of JSON array
                 json_file.write('\n')
             # Generating our solution
-            for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+            
+            if args.n_samples > df.shape[0]:
+                number_samples = df.shape[0]
+            else:
+                number_samples = args.n_samples
+
+            for index, row in tqdm(df.iterrows(), total=number_samples):
+                if index > args.n_samples:
+                    break
+
                 if index % 10 == 0: print("Current idx: " + str(index))
                 # Skip rows that were already processed
                 if index < resume_index:
