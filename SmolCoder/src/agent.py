@@ -122,7 +122,7 @@ class SmolCoder:
             # This happens when the agent forgets to adhere to the ReAct framework
             # e.g. after the observation instead of generating something starting with "Action" it generates bullshit
             if not isinstance(self.token_stream[-1], Action):
-                trajectory += """
+                trajectory += """\n
 It looks like the current response deviates from the expected sequence of Action, Thought, Observation. Please adhere to the following format to maintain consistency:
 Thought: Reasoning which action to take to solve the task.
 Action: Always either List_Files[folder] or Move_to_Folder[new_directory] or List_Classes[file_name] or List_Methods[class_name] or Show_Method_Body[class_name,method_name] or Replace_Method[class_name,method_name,new_method] or Finish[answer]
