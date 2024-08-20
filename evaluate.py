@@ -115,7 +115,7 @@ if __name__ == "__main__":
             # Generating our solution
             
             if args.n_samples > df.shape[0]:
-                number_sampels = df.shape[0]
+                number_samples = df.shape[0]
             else:
                 number_samples = args.n_samples
 
