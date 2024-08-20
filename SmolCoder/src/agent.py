@@ -64,7 +64,7 @@ class SmolCoder:
 
     def __call__(self, userprompt: str, max_calls: int = 10, start_cwd: str = "") -> str:
         """
-        Note that the userprompt needs to start with "Question:"
+        Note that the userprompt needs to start with "[Question]"
         Also note that the __call__ method right now is tailored for ReAct.
         It might need to be adapted for other prompting strategies.
         """
