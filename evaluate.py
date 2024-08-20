@@ -111,7 +111,13 @@ if __name__ == "__main__":
                 json_file.write('[')  # Start of JSON array
                 json_file.write('\n')
             # Generating our solution
-            for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+            
+            if args.n_samples > df.shape[0]:
+                number_sampels = df.shape[0]
+            else:
+                number_samples = args.n_samples
+
+            for index, row in tqdm(df.iterrows(), total=number_samples):
                 if index > args.n_samples:
                     break
 
