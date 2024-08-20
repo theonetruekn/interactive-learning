@@ -64,7 +64,7 @@ class SmolCoder:
 
     def __call__(self, userprompt: str, max_calls: int = 10, start_cwd: str = "") -> str:
         """
-        Note that the userprompt needs to start with "Question:"
+        Note that the userprompt needs to start with "[Question]"
         Also note that the __call__ method right now is tailored for ReAct.
         It might need to be adapted for other prompting strategies.
         """
@@ -122,12 +122,12 @@ class SmolCoder:
             # This happens when the agent forgets to adhere to the ReAct framework
             # e.g. after the observation instead of generating something starting with "Action" it generates bullshit
             if not isinstance(self.token_stream[-1], Action):
-                trajectory += """
+                trajectory += """\n
 It looks like the current response deviates from the expected sequence of Action, Thought, Observation. Please adhere to the following format to maintain consistency:
-Thought: Reasoning which action to take to solve the task.
-Action: Always either List_Files[folder] or Move_to_Folder[new_directory] or List_Classes[file_name] or List_Methods[class_name] or Show_Method_Body[class_name,method_name] or Replace_Method[class_name,method_name,new_method] or Finish[answer]
-Observation: result of the previous Action
-Thought: next steps to take based on the previous Observation
+[Thought] Reasoning which action to take to solve the task.
+[Action] Always either List_Files[folder] or Move_to_Folder[new_directory] or List_Classes[file_name] or List_Methods[class_name] or Show_Method_Body[class_name,method_name] or Replace_Method[class_name,method_name,new_method] or Finish[answer]
+[Observation] result of the previous Action
+[Thought] next steps to take based on the previous Observation
 ...
 until Action is of type `Finish`.
 Do not use any special formatation such as markdown.
