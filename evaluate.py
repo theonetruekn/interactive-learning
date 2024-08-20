@@ -66,6 +66,11 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_directory):
         os.makedirs(args.output_directory)
 
+    if args.dummy_model:
+        model_name = "dummy_model"
+    else:
+        model_name = args.model_name
+
     if not args.openai_key:
         agent = AgentWrapper(
                          agent_name="SmolCoder",

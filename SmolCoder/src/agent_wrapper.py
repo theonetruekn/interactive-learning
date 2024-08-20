@@ -46,8 +46,9 @@ class AgentWrapper():
             self.logger = logging.getLogger(__name__)
         else:
             self.logger = None
-
-        self.model = LLM(model, self.logger, openai)
+        
+        if not self.dummy_model:
+            self.model = LLM(model, self.logger, openai)
 
         if not os.path.isdir(working_directory):
             os.makedirs(working_directory)
