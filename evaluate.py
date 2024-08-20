@@ -54,7 +54,8 @@ if __name__ == "__main__":
     parser.add_argument('--working_directory', type=str, default="repos", help="Working directory of the Agent, here the github repository will be downloaded to.")
     parser.add_argument('--openai_key', type=str, default=None, help="Set it to your openai key, if you want to use it.")
     parser.add_argument('--dummy_model', type=bool, default=False, help="If this is activated runs the script with a stub/dummy as Model.")
-    
+    parser.add_argument('--n_samples', type=int, default=500, help="Number of Samples the program should be tested on, if not set uses the whole dataset.")
+
     args = parser.parse_args()
 
     df = pd.read_json(os.path.abspath(args.dataset_location))
@@ -79,7 +80,7 @@ if __name__ == "__main__":
                          model=args.model_name,
                          working_directory=args.working_directory,
                          logging_enabled=args.logging_enabled,
-                         dummy_model=args.dummy_model
+                         dummy_model=args.dummy_model,
                         )
     else:       
         agent = AgentWrapper(
@@ -87,9 +88,10 @@ if __name__ == "__main__":
                          toolkit=toolkit,
                          mode=0,
                          model="gpt4-o-mini",
+                         dummy_model=False,
                          working_directory=args.working_directory,
                          logging_enabled=args.logging_enabled,
-                         openai=(True, args.openai_key)
+                         openai=(True, args.openai_key),
                         )
 
 
@@ -110,6 +112,9 @@ if __name__ == "__main__":
                 json_file.write('\n')
             # Generating our solution
             for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+                if index > args.n_samples:
+                    break
+
                 if index % 10 == 0: print("Current idx: " + str(index))
                 # Skip rows that were already processed
                 if index < resume_index:
