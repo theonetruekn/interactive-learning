@@ -49,7 +49,10 @@ class AgentComputerInterface:
         else:
             tool = self.tools.find_tool(tool_name)
             if (tool is None):
-                obs =  f"No tool was found. Please choose one of the following tools: {self.tools.print_tool_short_descs()}" # TODO: Maybe add some stuff about "you can use fuzzy search too"
+                obs =  (
+                    f"No tool was found. Please choose one of the following tools: {self.tools.print_tool_short_descs()}."
+                    "Remember that to use a tool it has to follow the format of Tool_Name[arg1, arg2, ...]."
+                )
             elif (not tool.valid_params(input_variables)):
                 obs = (
                     f"The tool expected {tool.number_of_input_variables()} parameters, but got {len(input_variables)}.\n"
