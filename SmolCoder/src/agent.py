@@ -70,7 +70,6 @@ class SmolCoder:
         """
         if start_cwd != "":
             self.ACI._change_cwd(start_cwd)
-
         
         if self.logger is not None:
             self.logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
@@ -79,31 +78,33 @@ class SmolCoder:
         last_action = None
 
         for i in range(max_calls):
+            temp_traj = trajectory
+            temp_token_stream = self.token_stream
             if self.logger:
                 self.logger.debug("Call iteration: %d", i)
             if i == 0:
-                trajectory = self.prompting_strategy(prompt=userprompt, begin=True)
+                temp_traj = self.prompting_strategy(prompt=userprompt, begin=True)
             else:
-                trajectory = self.prompting_strategy(prompt=trajectory, begin=False)
+                temp_traj = self.prompting_strategy(prompt=temp_traj, begin=False)
             
 
             if self.logger is not None:
                 print("\n------------\n")
-                print(trajectory)
+                print(temp_traj)
                 print("\n------------\n")
 
-            self.token_stream = self.meta_tokenizer.tokenize(trajectory)
-            assert self.meta_tokenizer.is_valid_traj(trajectory), f"{self.token_stream}"
-            self._history.append(trajectory)
+            temp_token_stream = self.meta_tokenizer.tokenize(temp_traj)
+            if not self.meta_tokenizer.is_valid_traj(temp_traj):
+                continue
 
-            # assert isinstance(self.token_stream[-1], Action)
-            action: Action = self.token_stream[-1]
-            
+            if not isinstance(temp_token_stream[-1], Action):
+                continue
+            action: Action = temp_token_stream[-1]
 
             # Debugging
             # ------------------------------------------------------------------
             token_str_test = "("
-            for curr_token in self.token_stream:
+            for curr_token in temp_token_stream:
                 token_str_test += str(curr_token) + ", "
             token_str_test += ")"
 
@@ -116,41 +117,6 @@ class SmolCoder:
             if self.logger is not None:
                 if action == last_action:
                     self.logger.debug(f"\nThe Last Action is the same as current action: {str(action)}\n")
-            # ------------------------------------------------------------------
-            
-
-            # This happens when the agent forgets to adhere to the ReAct framework
-            # e.g. after the observation instead of generating something starting with "Action" it generates bullshit
-            if not isinstance(self.token_stream[-1], Action):
-                trajectory += """\n
-It looks like the current response deviates from the expected sequence of Action, Thought, Observation. Please adhere to the following format to maintain consistency:
-[Thought] Reasoning which action to take to solve the task.
-[Action] Always either List_Files[folder] or Move_to_Folder[new_directory] or List_Classes[file_name] or List_Methods[class_name] or Show_Method_Body[class_name,method_name] or Replace_Method[class_name,method_name,new_method] or Finish[answer]
-[Observation] result of the previous Action
-[Thought] next steps to take based on the previous Observation
-...
-until Action is of type `Finish`.
-Do not use any special formatation such as markdown.
-"The 'Observation' will automatically returned to you after you used an action, you do not need to generate it.
-\n
-"""
-                
-                self._history.append(trajectory)
-                continue
-
-            
-            # If we repeat an action, we backtrack
-            if last_action and action == last_action:
-                
-                if self.logger is not None:
-                    self.logger.warning("Detected repeated action. Attempting backtracking.")
-                    print("Detected repeated action.")
-                assert self._backtrack_action(), "Something went wrong while backtracking"
-                trajectory = self.meta_tokenizer.unparse(self.token_stream)
-
-            last_action = action
-           
-            # For debugging purpose, only           
             if isinstance(action, Action):
                 if self.logger is not None:
                     self.logger.debug("------")
@@ -158,24 +124,20 @@ Do not use any special formatation such as markdown.
 
                     self.logger.debug("action args: " + str(action.input_variables))
                     self.logger.debug("------")
-                    
+            # ------------------------------------------------------------------      
 
             tool_name, input_variables = action.unpack()
-            # If the tool-use fails, we backtrack
-            # FIXME: We might want to return errors?
-            #try:
             obs = self.ACI.get_observation(tool_name=tool_name, input_variables=input_variables)
-            #except Exception as e:
-            #    self.logger.error(f"Error during observation: {str(e)}. Attempting backtracking.")
-            #    print(f"Error during observation: {str(e)}. Attempting backtracking.")
-            #    assert self._backtrack_action()
-            #    continue
-            trajectory += obs
+            temp_traj += obs
 
-            assert self.meta_tokenizer.is_valid_traj(trajectory), f"{self.token_stream}"
-            self.token_stream = self.meta_tokenizer.tokenize(trajectory)
+            if not self.meta_tokenizer.is_valid_traj(temp_traj):
+                continue
+            temp_token_stream = self.meta_tokenizer.tokenize(temp_traj)
 
-            self._history.append(trajectory)
+            # After successful looping, update agent state
+            self.token_stream = temp_token_stream
+            trajectory = temp_traj
+            self._history.append(trajectory) #TODO: Make graph
 
             if self.ACI.finished:
                 break
