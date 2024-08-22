@@ -84,10 +84,7 @@ python -m swebench.harness.run_evaluation \
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 module load devel/miniconda
-set CUDA_VISIBLE_DEVICES=""
 OLLAMA_LLM_LIBRARY="cpu_avx2" ./ollama-linux-amd64 serve &
-./ollama-linux-amd64 run gemma2 &
-sleep 60
 python evaluate.py --logging_enabled=True --model_name="gemma2" --output_file="prediction_gemma2B.json"
 ```
 - Set the memory depending on the model, e.g. 2B memory <= 10GB, 8B memory <= 20GB  
