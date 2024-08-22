@@ -48,7 +48,7 @@ if __name__ == "__main__":
     # Arguments for the CLI
     parser.add_argument('--model_name', type=str, default='phi3:latest',
                         help='Name of the LLM model you want to use, as specified in ollama.')
-    parser.add_argument('--dataset_location', type=str, default='Evaluation/swe-bench-lite.json', help='File path to the location of the SWE-Bench-Lite dataset.')
+    parser.add_argument('--dataset_location', type=str, default='Evaluation/test-00000-of-00001.parquet', help='File path to the location of the SWE-Bench-Lite dataset.')
     parser.add_argument('--output_directory', type=str, default="output", help="File path towards the output folder.")
     parser.add_argument('--logging_enabled', type=bool, default=False, help="If logging for the agent should be enabled.")
     parser.add_argument('--working_directory', type=str, default="repos", help="Working directory of the Agent, here the github repository will be downloaded to.")
@@ -58,8 +58,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    df = pd.read_json(os.path.abspath(args.dataset_location))
-    
+    # df = pd.read_json(os.path.abspath(args.dataset_location))
+    df = pd.read_parquet(os.path.abspath(args.dataset_location))
+
+
     # If we use the dummy_model we want to ignore 'model_name' parameter
     if args.dummy_model:
         model_name = "dummy_model"
