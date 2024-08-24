@@ -3,7 +3,7 @@ import json
 import openai
 
 class LLM:
-    def __init__(self, model: str, logger, openai, url='http://localhost:11434/api/generate', raw : bool = False):
+    def __init__(self, model: str, logger, openai, url='http://localhost:11434/api/generate', raw : bool = True):
         self.logger = logger
         self.model = model
         self.url = url

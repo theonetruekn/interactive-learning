@@ -91,11 +91,13 @@ class SmolCoder:
 
             temp_token_stream = self.meta_tokenizer.tokenize(temp_traj)
             if not self.meta_tokenizer.is_valid_traj(temp_traj):
-                self.logger.info("Early error. Backtracking.")
+                if self.logger:
+                    self.logger.info("Early error. Backtracking.")
                 continue
 
             if not isinstance(temp_token_stream[-1], Action):
-                self.logger.info("Action format invalid. Backtracking")
+                if self.logger:
+                    self.logger.info("Action format invalid. Backtracking")
                 continue
             action: Action = temp_token_stream[-1]
 
@@ -107,7 +109,7 @@ class SmolCoder:
             token_str_test += ")"
             
             if isinstance(action, Action):
-                if self.logger is not None:
+                if self.logger:
                     self.logger.debug("------")
                     self.logger.debug("action: " + str(action.tool_name))
 
@@ -123,7 +125,8 @@ class SmolCoder:
                 self.logger.info(f"Current call trajectory:\n{temp_traj}")
 
             if not self.meta_tokenizer.is_valid_traj(temp_traj):
-                self.logger.info("Trajectory invalid after Observation. Backtracking.")
+                if self.logger:
+                    self.logger.info("Trajectory invalid after Observation. Backtracking.")
                 continue
             temp_token_stream = self.meta_tokenizer.tokenize(temp_traj)
 
