@@ -90,6 +90,7 @@ class ReAct(PromptingStrategy):
         )
 
         sysprompt += self.SYSPROMPT_TOKEN
+        sysprompt += "\n\n"
 
         return sysprompt
 
