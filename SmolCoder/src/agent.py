@@ -75,29 +75,27 @@ class SmolCoder:
             self.logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
         
         trajectory = ""
-        last_action = None
 
         for i in range(max_calls):
             temp_traj = trajectory
             temp_token_stream = self.token_stream
             if self.logger:
-                self.logger.debug("Call iteration: %d", i)
+                self.logger.info("Call iteration: %d", i)
             if i == 0:
                 temp_traj = self.prompting_strategy(prompt=userprompt, begin=True)
             else:
                 temp_traj = self.prompting_strategy(prompt=temp_traj, begin=False)
             
-
             if self.logger is not None:
-                print("\n------------\n")
-                print(temp_traj)
-                print("\n------------\n")
+                self.logger.info(f"Current call trajectory:\n{temp_traj}")
 
             temp_token_stream = self.meta_tokenizer.tokenize(temp_traj)
             if not self.meta_tokenizer.is_valid_traj(temp_traj):
+                self.logger.info("Early error. Backtracking.")
                 continue
 
             if not isinstance(temp_token_stream[-1], Action):
+                self.logger.info("Action format invalid. Backtracking")
                 continue
             action: Action = temp_token_stream[-1]
 
@@ -107,16 +105,7 @@ class SmolCoder:
             for curr_token in temp_token_stream:
                 token_str_test += str(curr_token) + ", "
             token_str_test += ")"
-
-            if self.logger is not None:
-                self.logger.debug("\n-------")
-                self.logger.debug("Current action_stream: " + token_str_test + "\n")
-                self.logger.debug("Last token: " + str(action))
-                self.logger.debug("-------\n")
             
-            if self.logger is not None:
-                if action == last_action:
-                    self.logger.debug(f"\nThe Last Action is the same as current action: {str(action)}\n")
             if isinstance(action, Action):
                 if self.logger is not None:
                     self.logger.debug("------")
@@ -130,7 +119,11 @@ class SmolCoder:
             obs = self.ACI.get_observation(tool_name=tool_name, input_variables=input_variables)
             temp_traj += obs
 
+            if self.logger is not None:
+                self.logger.info(f"Current call trajectory:\n{temp_traj}")
+
             if not self.meta_tokenizer.is_valid_traj(temp_traj):
+                self.logger.info("Trajectory invalid after Observation. Backtracking.")
                 continue
             temp_token_stream = self.meta_tokenizer.tokenize(temp_traj)
 
@@ -140,8 +133,11 @@ class SmolCoder:
             self._history.append(trajectory) #TODO: Make graph
 
             if self.ACI.finished:
+                if self.logger is not None:
+                    self.logger.info("Finished before expiration!")
                 break
         
         if self.logger is not None:
             self.logger.info("Final trajectory: %s", trajectory)
+        
         return trajectory
