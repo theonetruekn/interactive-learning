@@ -20,6 +20,7 @@ class LLM:
                 "prompt": prompt,
                 "stream": True,
                 "raw": self.raw, # needs to be off for phi3
+                "system": "",
                 "options": {"cache_prompt": True, "seed": seed, "num_predict": 500}
             }
 

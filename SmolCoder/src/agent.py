@@ -15,7 +15,7 @@ from SmolCoder.src.aci import AgentComputerInterface
 from SmolCoder.src.llm_wrapper import LLM
 from SmolCoder.src.toolkit import Toolkit
 
-from SmolCoder.src.tools.list_codebase_structure import generate_tree
+from SmolCoder.src.tools.list_codebase_structure import generate_tree, generate_file_list
 
 
 class SmolCoder:
@@ -83,7 +83,7 @@ class SmolCoder:
         
         
         # This is how mayn tried the llm has to correct itself i.e.  select correct paths.
-        number_of_tries = 5
+        number_of_tries = 1
 
         # ----------------------------------
         # SYSTEMPROMPT
@@ -106,7 +106,7 @@ class SmolCoder:
         trajectory += sysprompt
         trajectory += "You will now be given the structure of codebase corresponding to the Issue:\n"
         trajectory += "```\n"
-        trajectory += generate_tree(start_cwd)
+        trajectory += generate_file_list(start_cwd)
         trajectory += "\n"
         trajectory += "```\n"
         trajectory += "--------------------------------------------\n"
@@ -115,15 +115,8 @@ class SmolCoder:
 Please provide the list of file paths in plain text format, without any whitespaces. Each file path should be on a new line and without any whitespaces. At the end of the list, include the specific stop token `--- END OF LIST ---` to indicate the end of the list.
 
 Please only provide the full path and return at most 5 files. Do not provide commentary.
-The returned files should be separated by new lines and be wrapped with ```. Note that all files should be wrapped together in ``` blocks.
+The returned files should be separated by new lines.
 DO NOT ADD ANYTHING ELSE TO YOUR RESPONSE.
-For example:
-```
-file1.py
-file2.py
-file3.py
-file4.py
-```
 
 For example: 
 /documents/report.py
@@ -135,9 +128,11 @@ To repeat:
 - Each file path should be listed on its own line.
 - After the last file path, include the stop token `--- END OF LIST ---` on a new line. This token indicates the end of the file paths list.
 - There should be no additional formatting or characters besides the file paths and the stop token. \n
-Your file list: \n
-        """
+- DO NOT USE WHITESPACE
+Your file list:\n"""
         trajectory += prompt_list_files
+
+        print(trajectory)
 
         # We give the LLM multiple tries to correctly output a list of files
         file_paths = []
@@ -145,7 +140,7 @@ Your file list: \n
         for _ in range(number_of_tries):
             # Query the LLM for its choice of files.
             llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
-            
+            print("LLM Response: ", llm_response)
             # Add the reposne of the llm to our trajectory
             trajectory += llm_response
             trajectory += "\n"
@@ -153,7 +148,7 @@ Your file list: \n
 
 
             # Parse the list out of the llm response and check for errors
-            file_paths, error = self.parse_file_paths(llm_response)
+            file_paths, error = self.parse_file_paths(llm_response, start_cwd)
             
             if error:
                 trajectory += "While parsing your provided list of selected file paths an error was found: \n"
@@ -235,7 +230,7 @@ Please provide a list of classes or functions in json file format. Use an array,
 ]
 --- END OF LIST ---
 
-Your class and function list: \n
+Your class and function list:
 """
         trajectory += prompt_headers
         data = None
@@ -346,7 +341,7 @@ Your class and function list: \n
 
 
 
-    def parse_file_paths(self, text, stop_token='--- END OF LIST ---'):
+    def parse_file_paths(self, text, start_cwd, stop_token='--- END OF LIST ---'):
         """
         Parses a list of file paths from the given plain text.
 
@@ -381,10 +376,12 @@ Your class and function list: \n
                 stop_token_found = True
                 break
             
-            if not line:
-                return [], 'Error: Found an empty line in the file paths list.'
-
-            file_paths.append(line)
+            # Construct the full file path and check if it exists
+            full_path = os.path.join(start_cwd, line)
+            if os.path.isfile(full_path):
+                file_paths.append(full_path)
+            else:
+                return [], f'Error: File `{full_path}` does not exist.'
 
         # Check if the stop token was found
         if not stop_token_found:
@@ -394,7 +391,6 @@ Your class and function list: \n
         remaining_lines = lines[lines.index(stop_token) + 1:]
         if any(line.strip() for line in remaining_lines):
             return [], f'Error: Content found after the stop token `{stop_token}`.'
-
 
         return file_paths, None
 
