@@ -1,5 +1,6 @@
 import os
 import ast
+import json
 
 from os import execv
 from pathlib import Path
@@ -80,13 +81,27 @@ class SmolCoder:
             self.logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
             self.logger.info("Starting current working directory: %s", start_cwd)
         
+        
+        # This is how mayn tried the llm has to correct itself i.e.  select correct paths.
+        number_of_tries = 5
+
+        # ----------------------------------
+        # SYSTEMPROMPT
+        # ----------------------------------
+
         sysprompt = "You will be given a description of a `GitHub issue` and it's corresponding codebase and your task is, to solve this issue. First you will be given a tree structure of the codebase, your task is it based on the description of the issue to select relevant files of it for closer inspection. After this you will be provided with a skeleten for each of your slected file, this skeleton will consist out of class and method headers and your task will be to select the classes and methods that are relevant to the described issue. At the end you will be provided with the source code of your selected classes and methos and asked to fix it.\n"
         sysprompt += "--------------------------------------------\n"
         sysprompt += "You will now be given the description of the GitHub Issue: \n\n"
         sysprompt += userprompt 
         sysprompt += "\n"
         sysprompt += "--------------------------------------------\n"
-                
+        
+
+        # ----------------------------------
+        # FIND SUS FILES
+        # ----------------------------------
+
+        print("FIND SUS FILES PHASE:\n\n")
         trajectory = ""
         trajectory += sysprompt
         trajectory += "You will now be given the structure of codebase corresponding to the Issue:\n"
@@ -114,8 +129,9 @@ Your file list: \n
         trajectory += prompt_list_files
 
         # We give the LLM multiple tries to correctly output a list of files
-        file_paths = [] 
-        for _ in range(5):
+        file_paths = []
+        found_paths = False
+        for _ in range(number_of_tries):
             # Query the LLM for its choice of files.
             llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
             
@@ -129,7 +145,7 @@ Your file list: \n
             file_paths, error = self.parse_file_paths(llm_response)
             
             if error:
-                trajectory += "While parsing your provided a list of selected file paths an error was found: \n"
+                trajectory += "While parsing your provided list of selected file paths an error was found: \n"
                 trajectory += error
                 trajectory += "\n"
                 trajectory += "--------------------------------------------\n"
@@ -142,7 +158,7 @@ Your file list: \n
             errors_found = any(status != 'Valid' for status in validity.values())
             
             if errors_found:
-                trajectory += "While parsing your provided a list of selected file paths an error was found: \n"
+                trajectory += "While parsing your provided list of selected file paths an error was found: \n"
                 for path, status in validity.items():
                     trajectory += f'{path}: {status}\n'
                 
@@ -150,11 +166,25 @@ Your file list: \n
                 trajectory += "Please try again."
                 trajectory += prompt_list_files
                 continue
+            
+            # If we didn't find any error we can go out of the loop
+            found_paths = True
+            break
         
         print(trajectory)
-        print("------------------------------------")
-        print("------------------------------------")
+        print("------------------------------------\n")
+        print("------------------------------------\n")
+        
+        if not found_paths:
+            print("Sucks to suck, LLM didn't find any valid paths.")
+            return trajectory
 
+        # ----------------------------------
+        # FIND SUS CLASSES AND FUNCTIONS
+        # ----------------------------------
+        
+        
+        print("SUS CLASSES AND FUNCTION PHASE:\n\n")
         # We now want to ask the LLM for suspicious classes 
         # For that we reset the context, because our context is limited
         trajectory = ""
@@ -175,9 +205,9 @@ Your file list: \n
 
         trajectory += file_skeletons
         trajectory += "--------------------------------------------\n"
-        trajectory += "Now that you have seen, all the classes and function of the relveant files please select classes and function that you think are relevant to the issue. \n"
+        trajectory += "Now that you have seen, all the classes and function of the relevant files please select classes and function that you think are relevant to the issue. \n"
         prompt_headers = """
-Please provide a list of classes or functions in json file format. Use an array, where each entry has the following elements: `file_path`, `selected_functions` and `selected_classes`, where `file_path` point towards the file within which are the `selected_functions` and `selected_classes` which are arrays.
+Please provide a list of classes or functions in json file format. Use an array, where each entry has the following elements: `file_path`, `selected_functions` and `selected_classes`, where `file_path` point towards the file within which are the `selected_functions` and `selected_classes` which are arrays. End your output with the stop token `--- END OF LIST ---`.
 
 **Example Output:**
 [
@@ -192,12 +222,115 @@ Please provide a list of classes or functions in json file format. Use an array,
         "selected_classes": [_ViewType],
     },
 ]
+--- END OF LIST ---
 
 Your class and function list: \n
 """
         trajectory += prompt_headers
+        data = None
+        found_headers = False
+        for _ in range(number_of_tries):
+            # Query the LLM for its choice of classes/functions.
+            llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
+            
+            # Add the reponse of the llm to our trajectory
+            trajectory += llm_response
+            trajectory += "\n"
+            trajectory += "--------------------------------------------\n"
 
-        return trajectory
+            # Parse the list out of the llm response and check for errors
+            status, data = self.parse_json_string(llm_response)
+            
+            if not status:
+                trajectory += "While parsing your provided a list of selected classes and functions an error was found: \n"
+                trajectory += data
+                trajectory += "\n"
+                trajectory += "--------------------------------------------\n"
+                trajectory += "Please try again."
+                trajectory += prompt_list_files
+                continue
+            
+            # If we didn't find any error we can go out of the loop
+            found_headers = True
+            break
+        
+        print(trajectory)
+        print("------------------------------------\n")
+        print("------------------------------------\n")
+        
+        if not found_headers:
+            print("Sucks to suck, LLM didn't find any valid classes/functions.")
+            return trajectory
+
+
+        # ----------------------------------
+        # FIND SUS CODE SNIPPETS
+        # ----------------------------------
+
+        print("CODE SNIPPET PHASE: \n\n")
+        # We now want to ask the LLM for suspicious classes 
+        # For that we reset the context, because our context is limited
+        trajectory = ""
+        trajectory += sysprompt
+        trajectory += "In a previous iteration you've already found classes and fucntion that might be relevant to the described Issue. We now want to look closer and identify code snippets that are relevant to the described Issue. For this purpose you will receive a list of source code for these classes and function and you should choose the top 5 classes or functions that are relevant to the described issue.\n"
+        trajectory += "--------------------------------------------\n"
+        trajectory += "You will now be given the source code of the classes and function:\n"    
+        # If a class/funciton doesn't exist it gets ignored.
+        # Build the releveant source code
+        extracted_code = self.extract_code_from_file(data)
+        code_string = self.save_extracted_code_as_string(extracted_code)
+        
+        # TODO
+        # FUCK I HATE IT HERE
+        # WHAT THER FUCK DO I DO HERE?????
+        # LETS JUST ACT LIKE THIS DOESNT HAPPEN
+        # checking for error should happen in the previous phase
+        # why even bother, llama3.1 cant even get pass the first step of seelcting files.
+        if code_string.startswith("Error"):
+            print("Bad luck bucko! Your agent just pissed itself.")
+            pass
+
+        trajectory += code_string
+        trajectory += "--------------------------------------------\n"
+        trajectory += "Now that you have seen, all the classes and function of the relevant files please select classes and function that you think are relevant to the issue. \n"
+
+        trajectory += prompt_headers
+        data = None
+        found_headers = False
+        for _ in range(number_of_tries):
+            # Query the LLM for its choice of classes/functions.
+            llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
+            
+            # Add the reponse of the llm to our trajectory
+            trajectory += llm_response
+            trajectory += "\n"
+            trajectory += "--------------------------------------------\n"
+
+            # Parse the list out of the llm response and check for errors
+            status, data = self.parse_json_string(llm_response)
+            
+            if not status:
+                trajectory += "While parsing your provided a list of selected classes and functions an error was found: \n"
+                trajectory += data
+                trajectory += "\n"
+                trajectory += "--------------------------------------------\n"
+                trajectory += "Please try again."
+                trajectory += prompt_list_files
+                continue
+            
+            # If we didn't find any error we can go out of the loop
+            found_headers = True
+            break
+        
+        print(trajectory)
+        print("------------------------------------\n")
+        print("------------------------------------\n")
+        
+        if not found_headers:
+            print("Sucks to suck, LLM didn't find any valid classes/functions.")
+            return trajectory
+
+        return "The LLM model has choosen the following functions/classes: " + str(data)
 
 
 
@@ -377,5 +510,109 @@ Your class and function list: \n
 
         return '\n'.join(formatted_output)
 
+    def parse_json_string(self, json_string):
+        try:
+            # Attempt to parse the JSON string into a Python object
+            data = json.loads(json_string)
+            
+            # Check if the top-level structure is a list
+            if not isinstance(data, list):
+                return (False, "Error: JSON should start with a list of dictionaries.")
+            
+            for i, item in enumerate(data):
+                if not isinstance(item, dict):
+                    return (False, f"Error: Element at index {i} should be a dictionary.")
+                
+                # Check for the 'file_path' key and its type
+                if 'file_path' not in item:
+                    return (False, f"Error: Missing 'file_path' key in element at index {i}.")
+                if not isinstance(item['file_path'], str):
+                    return (False, f"Error: 'file_path' at index {i} should be a string.")
+                
+                # Check for 'selected_functions' and 'selected_classes' keys and their types
+                if 'selected_functions' not in item or not isinstance(item['selected_functions'], list):
+                    return (False, f"Error: 'selected_functions' at index {i} should be a list.")
+                if 'selected_classes' not in item or not isinstance(item['selected_classes'], list):
+                    return (False, f"Error: 'selected_classes' at index {i} should be a list.")
+                
+                # Convert all elements in 'selected_functions' and 'selected_classes' to strings
+                item['selected_functions'] = [str(func) for func in item['selected_functions']]
+                item['selected_classes'] = [str(cls) for cls in item['selected_classes']]
+            
+            return (True, data)
+        
+        except json.JSONDecodeError as e:
+            return (False, f"Error: Failed to parse JSON. {str(e)}")
+   
+    def extract_code_from_file(self, parsed_data):
+        results = {}
+
+        for item in parsed_data:
+            file_path = item.get('file_path')
+            selected_functions = item.get('selected_functions')
+            selected_classes = item.get('selected_classes')
+
+            # Error detection: Check if file_path is empty
+            if not file_path:
+                results["Error"] = "Error: 'file_path' is empty or missing."
+                continue
+
+            # Check if functions and classes are provided
+            if not selected_functions and not selected_classes:
+                results[file_path] = "Error: No functions or classes specified."
+                continue
+
+            try:
+                # Read the content of the Python file
+                with open(file_path, 'r') as file:
+                    file_content = file.read()
+
+                # Parse the file content into an AST
+                tree = ast.parse(file_content)
+                
+                # Store the results for this file
+                file_results = {}
+
+                # Helper function to extract source code from AST nodes
+                def get_source(node):
+                    return ast.get_source_segment(file_content, node)
+
+                # Traverse the AST to find functions and classes
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.FunctionDef) and node.name in selected_functions:
+                        file_results[node.name] = get_source(node)
+                    elif isinstance(node, ast.ClassDef) and node.name in selected_classes:
+                        file_results[node.name] = get_source(node)
+
+                # Error detection: Check if no functions or classes were found
+                if not file_results:
+                    results[file_path] = "Error: No matching functions or classes found."
+                else:
+                    results[file_path] = file_results
+
+            except FileNotFoundError:
+                results[file_path] = f"Error: The file at '{file_path}' was not found."
+            except Exception as e:
+                results[file_path] = f"Error: Something went wrong while processing {file_path}. {str(e)}"
+
+        return results
 
 
+    def save_extracted_code_as_string(self, extracted_code):
+        """
+        Takes as input the ouput of `format_parsed_data`, if its output has a class that doesnt exist, no error, but gets ignored.
+        """
+        code_string = ""
+        
+        for file_path, code in extracted_code.items():
+            if isinstance(code, str) and code.startswith("Error"):
+                code_string += f"{code}\n"
+            else:
+                code_string += f"File: {file_path}\n"
+                for name, source in code.items():
+                    code_string += f"\n{name}:\n{source}\n"
+        
+        if not code_string.strip():
+            return "Error: No code was extracted."
+        
+        return code_string
