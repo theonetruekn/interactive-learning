@@ -114,13 +114,24 @@ class SmolCoder:
         prompt_list_files = """
 Please provide the list of file paths in plain text format, without any whitespaces. Each file path should be on a new line and without any whitespaces. At the end of the list, include the specific stop token `--- END OF LIST ---` to indicate the end of the list.
 
-**Example Output:**
+Please only provide the full path and return at most 5 files. Do not provide commentary.
+The returned files should be separated by new lines and be wrapped with ```. Note that all files should be wrapped together in ``` blocks.
+DO NOT ADD ANYTHING ELSE TO YOUR RESPONSE.
+For example:
+```
+file1.py
+file2.py
+file3.py
+file4.py
+```
+
+For example: 
 /documents/report.py
 /pictures/vacation.py
 /music/song.py
 --- END OF LIST ---
 
-**Explanation:**
+To repeat:
 - Each file path should be listed on its own line.
 - After the last file path, include the stop token `--- END OF LIST ---` on a new line. This token indicates the end of the file paths list.
 - There should be no additional formatting or characters besides the file paths and the stop token. \n
