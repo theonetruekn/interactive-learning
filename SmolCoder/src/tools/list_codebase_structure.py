@@ -43,27 +43,24 @@ def generate_tree(root_dir):
     return ""
 
 def generate_file_list(root_dir, prefix=""):
-    # Get all files and directories in the current root_dir
+    # Get all files and directories in the current root_dir, excluding hidden files and directories
     entries = [entry for entry in os.listdir(root_dir) if not entry.startswith('.')]
 
-    # Filter Python files
-    py_files = [f for f in entries if os.path.isfile(os.path.join(root_dir, f)) and f.endswith('.py')]
+    # Filter Python files and directories separately
+    files = [f for f in entries if os.path.isfile(os.path.join(root_dir, f)) and f.endswith('.py')]
+    directories = [d for d in entries if os.path.isdir(os.path.join(root_dir, d))]
 
-    # Separate files and directories
-    files = [f for f in py_files if os.path.isfile(os.path.join(root_dir, f))]
-    directories = [d for d in py_files if os.path.isdir(os.path.join(root_dir, d))]
-    
     # Create a list to hold the output lines
     lines = []
-    
+
     # Process files
     for file in files:
         lines.append(os.path.join(prefix, file))
-    
+
     # Process directories
     for directory in directories:
         # Recursively call the function on subdirectories
         sub_lines = generate_file_list(os.path.join(root_dir, directory), os.path.join(prefix, directory))
         lines.extend(sub_lines.splitlines())  # Extend the lines list with each subdirectory's output
-    
+
     return "\n".join(lines)
