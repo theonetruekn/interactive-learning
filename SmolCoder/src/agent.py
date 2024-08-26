@@ -64,7 +64,9 @@ class SmolCoder:
         # FIND SUS FILES
         # ----------------------------------
         print("FIND SUS FILES PHASE:\n\n")
-        file_paths = find_sus_files(sysprompt, max_files=5, max_tries=5)
+        file_paths = self.find_sus_files(sysprompt, start_cwd, max_files=5, max_tries=5)
+
+        return file_paths
 
         # ----------------------------------
         # FIND SUS CLASSES AND FUNCTIONS
@@ -137,7 +139,7 @@ class SmolCoder:
                 trajectory += "\n"
                 trajectory += "--------------------------------------------\n"
                 trajectory += "Please try again."
-                trajectory += prompt_list_files
+                trajectory += self.prompt_list_files
                 continue
             
             # If we didn't find any error we can go out of the loop
@@ -204,7 +206,7 @@ class SmolCoder:
                 trajectory += "\n"
                 trajectory += "--------------------------------------------\n"
                 trajectory += "Please try again."
-                trajectory += prompt_list_files
+                trajectory += self.prompt_list_files
                 continue
             
             # If we didn't find any error we can go out of the loop
@@ -421,7 +423,7 @@ class SmolCoder:
         
         return code_string
 
-    def prompt_list_files(n=5):
+    def prompt_list_files(self, n=5):
         return (
             "Please provide the list of file paths in plain text format, without any whitespaces. "
             "Each file path should be on a new line and without any whitespaces. "
@@ -444,7 +446,7 @@ class SmolCoder:
             "Your file list:\n"
         )
 
-    def find_sus_files(sysprompt, max_tries=5, max_files=5) -> List[str]:
+    def find_sus_files(self, sysprompt, start_cwd, max_tries=5, max_files=5) -> List[str]:
         trajectory = ""
         trajectory += sysprompt
         trajectory += "You will now be given the structure of codebase corresponding to the Issue:\n"
@@ -455,13 +457,13 @@ class SmolCoder:
         trajectory += "--------------------------------------------\n"
         trajectory += "Now that you have seen structure of the codebase please select files that you think are relevenat to the issue. "
         
-        trajectory += prompt_list_files(n=max_files)
+        trajectory += self.prompt_list_files(n=max_files)
 
         # We give the LLM multiple tries to correctly output a list of files
         file_paths = []
         found_paths = False
 
-        for _ in range(number_of_tries):
+        for _ in range(max_tries):
             
             llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
             trajectory += llm_response
@@ -478,15 +480,16 @@ class SmolCoder:
                 trajectory += "\n"
                 trajectory += "--------------------------------------------\n"
                 trajectory += "Please try again."
-                trajectory += prompt_list_files(max_files - len(file_paths))
+                trajectory += self.prompt_list_files(max_files - len(file_paths))
                 continue
 
             # Check if the files exist and are python files
             errors = self.check_file_paths(llm_file_paths)
 
-            # append the valid file paths to the main list
-            valid_paths = [path for path in llm_file_paths if path not in errors]
+            # append the valid file paths that have not already been appended to the main list
+            valid_paths = [path for path in llm_file_paths if path not in errors and path not in file_paths]
             file_paths.extend(valid_paths)
+
 
             # If there are errors, report them to the LLM and continue the loop
             if errors:
@@ -496,7 +499,7 @@ class SmolCoder:
                 
                 trajectory += "--------------------------------------------\n"
                 trajectory += "Please try again."
-                trajectory += prompt_list_files(max_files - len(file_paths))
+                trajectory += self.prompt_list_files(max_files - len(file_paths))
                 continue
 
             if len(file_paths) == 5:
