@@ -489,16 +489,16 @@ class SmolCoder:
         for path in file_paths:
             class_info, function_names, file_lines = self.parse_python_file(path)
             formatted_output = self.format_parsed_data(class_info, function_names)
-            
+                
             file_skeletons += f"Headers for {path}\n"
             file_skeletons += "```\n"
             file_skeletons += formatted_output
             file_skeletons += "```\n"
 
-            trajectory += file_skeletons
-            trajectory += "--------------------------------------------\n"
-            trajectory += "Now that you have seen, all the classes and function of the relevant files please select classes and function that you think are relevant to the issue. \n"
-            trajectory += self.prompt_list_headers(max_headers)
+        trajectory += file_skeletons
+        trajectory += "--------------------------------------------\n"
+        trajectory += "Now that you have seen, all the classes and function of the relevant files please select classes and function that you think are relevant to the issue. \n"
+        trajectory += self.prompt_list_headers(max_headers)
         data = None
         found_headers = False
         for _ in range(max_tries):
