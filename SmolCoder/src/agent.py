@@ -66,93 +66,14 @@ class SmolCoder:
         print("FIND SUS FILES PHASE:\n\n")
         file_paths = self.find_sus_files(sysprompt, start_cwd, max_files=5, max_tries=5)
 
-        return file_paths
-
         # ----------------------------------
         # FIND SUS CLASSES AND FUNCTIONS
         # ----------------------------------
-        
+
         print("SUS CLASSES AND FUNCTION PHASE:\n\n")
-        # We now want to ask the LLM for suspicious classes 
-        # For that we reset the context, because our context is limited
-        trajectory = ""
-        trajectory += sysprompt
-        trajectory += "In a previous iteration you've already found files that might be relevant to the described Issue. We now want to look closer and identify classes and functions that are relevant to the described Issue. For this purpose you will receive a list of classes and function and you should choose ones that are relevant to the described issue.\n"
-        trajectory += "--------------------------------------------\n"
-        trajectory += "You will now be given the headers of classes and function:\n"
+        data = self.find_sus_headers(file_paths, sysprompt, max_headers=5, max_tries=5)
         
-        file_skeletons = ""
-        for path in file_paths:
-            class_info, function_names, file_lines = self.parse_python_file(path)
-            formatted_output = self.format_parsed_data(class_info, function_names)
-            
-            file_skeletons += f"Headers for {path}\n"
-            file_skeletons += "```\n"
-            file_skeletons += formatted_output
-            file_skeletons += "```\n"
-
-        trajectory += file_skeletons
-        trajectory += "--------------------------------------------\n"
-        trajectory += "Now that you have seen, all the classes and function of the relevant files please select classes and function that you think are relevant to the issue. \n"
-        prompt_headers = (
-            "Please provide a list of classes or functions in JSON file format. "
-            "Use an array, where each entry has the following elements: `file_path`, "
-            "`selected_functions`, and `selected_classes`. The `file_path` should point to the file "
-            "containing the `selected_functions` and `selected_classes`, which are arrays. "
-            "End your output with the stop token `--- END OF LIST ---`.\n\n"
-            
-            "**Example Output:**\n"
-            "[\n"
-            "    {\n"
-            '        "file_path": "/torch/nn/attention/bias.py",\n'
-            '        "selected_functions": ["causal_upper_left", "causal_upper_right"],\n'
-            '        "selected_classes": ["CausalVariant", "CausalBias"]\n'
-            "    },\n"
-            "    {\n"
-            '        "file_path": "/torch/fx/passes/reinplace.py",\n'
-            '        "selected_functions": [],\n'
-            '        "selected_classes": ["_ViewType"]\n'
-            "    }\n"
-            "]\n"
-            "--- END OF LIST ---\n\n"
-            
-            "Your class and function list:\n"
-        )
-
-        trajectory += prompt_headers
-        data = None
-        found_headers = False
-        for _ in range(number_of_tries):
-            # Query the LLM for its choice of classes/functions.
-            llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
-            
-            # Add the reponse of the llm to our trajectory
-            trajectory += llm_response
-            trajectory += "\n"
-            trajectory += "--------------------------------------------\n"
-
-            status, data = self.parse_json_string(llm_response)
-            
-            if not status:
-                trajectory += "While parsing your provided a list of selected classes and functions an error was found: \n"
-                trajectory += data
-                trajectory += "\n"
-                trajectory += "--------------------------------------------\n"
-                trajectory += "Please try again."
-                trajectory += self.prompt_list_files
-                continue
-            
-            # If we didn't find any error we can go out of the loop
-            found_headers = True
-            break
-        
-        print(trajectory)
-        print("------------------------------------\n")
-        print("------------------------------------\n")
-        
-        if not found_headers:
-            print("Sucks to suck, LLM didn't find any valid classes/functions.")
-            return trajectory
+        return ""
 
         # ----------------------------------
         # FIND SUS CODE SNIPPETS
@@ -423,6 +344,7 @@ class SmolCoder:
         
         return code_string
 
+
     def prompt_list_files(self, n=5):
         return (
             "Please provide the list of file paths in plain text format, without any whitespaces. "
@@ -446,6 +368,7 @@ class SmolCoder:
             "Your file list:\n"
         )
 
+
     def find_sus_files(self, sysprompt, start_cwd, max_tries=5, max_files=5) -> List[str]:
         trajectory = ""
         trajectory += sysprompt
@@ -462,7 +385,6 @@ class SmolCoder:
         # We give the LLM multiple tries to correctly output a list of files
         file_paths = []
         found_paths = False
-
         for _ in range(max_tries):
             
             llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
@@ -514,6 +436,98 @@ class SmolCoder:
             print(f"Found the following paths: ", str(file_paths))
 
         return file_paths
+    
+
+    def find_sus_headers(self, sysprompt, file_paths, max_headers, max_tries):
+        # We now want to ask the LLM for suspicious classes 
+        # For that we reset the context, because our context is limited
+        trajectory = ""
+        trajectory += sysprompt
+        trajectory += "In a previous iteration you've already found files that might be relevant to the described Issue. We now want to look closer and identify classes and functions that are relevant to the described Issue. For this purpose you will receive a list of classes and function and you should choose ones that are relevant to the described issue.\n"
+        trajectory += "--------------------------------------------\n"
+        trajectory += "You will now be given the headers of classes and function:\n"
+    
+        # Create the headers string
+        file_skeletons = ""
+        for path in file_paths:
+            class_info, function_names, file_lines = self.parse_python_file(path)
+            formatted_output = self.format_parsed_data(class_info, function_names)
+            
+            file_skeletons += f"Headers for {path}\n"
+            file_skeletons += "```\n"
+            file_skeletons += formatted_output
+            file_skeletons += "```\n"
+
+            trajectory += file_skeletons
+            trajectory += "--------------------------------------------\n"
+            trajectory += "Now that you have seen, all the classes and function of the relevant files please select classes and function that you think are relevant to the issue. \n"
+            prompt_headers = (
+                "Please provide a list of classes or functions in JSON file format. "
+                "Use an array, where each entry has the following elements: `file_path`, "
+                "`selected_functions`, and `selected_classes`. The `file_path` should point to the file "
+                "containing the `selected_functions` and `selected_classes`, which are arrays. "
+                "End your output with the stop token `--- END OF LIST ---`.\n\n"
+                
+                "**Example Output:**\n"
+                "[\n"
+                "    {\n"
+                '        "file_path": "/torch/nn/attention/bias.py",\n'
+                '        "selected_functions": ["causal_upper_left", "causal_upper_right"],\n'
+                '        "selected_classes": ["CausalVariant", "CausalBias"]\n'
+                "    },\n"
+                "    {\n"
+                '        "file_path": "/torch/fx/passes/reinplace.py",\n'
+                '        "selected_functions": [],\n'
+                '        "selected_classes": ["_ViewType"]\n'
+                "    }\n"
+                "]\n"
+                "--- END OF LIST ---\n\n"
+                
+                "Your class and function list:\n"
+            )
+
+            trajectory += prompt_headers
+        data = None
+        found_headers = False
+        for _ in range(max_tries):
+            # Query the LLM for its choice of classes/functions.
+            llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
+            
+            # Add the reponse of the llm to our trajectory
+            trajectory += llm_response
+            trajectory += "\n"
+            trajectory += "--------------------------------------------\n"
+            status, data = self.parse_json_string(llm_response)
+            
+            if not status:
+                trajectory += "While parsing your provided a list of selected classes and functions an error was found: \n"
+                trajectory += data
+                trajectory += "\n"
+                trajectory += "--------------------------------------------\n"
+                trajectory += "Please try again."
+                trajectory += self.prompt_list_files
+                continue
+            
+            # If we didn't find any error we can go out of the loop
+            found_headers = True
+            break
+        
+        print(trajectory)
+        print("------------------------------------\n")
+        print("------------------------------------\n")
+        
+        if not found_headers:
+            print("Sucks to suck, LLM didn't find any valid classes/functions.")
+        else:
+            print("found the following data: ", str(data))
+
+        return data
+
+
+
+        
+
+
 
     def parse_file_paths(self, text, start_cwd, stop_token='--- END OF LIST ---'):
         """
