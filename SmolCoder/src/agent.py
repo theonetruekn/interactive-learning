@@ -84,7 +84,7 @@ class SmolCoder:
             print("SUS CLASSES AND FUNCTION PHASE:\n\n")
             data = self.find_sus_headers(sysprompt, file_paths, max_headers=5, max_tries=5)
         
-        return ""
+        # return ""
 
         # ----------------------------------
         # FIND SUS CODE SNIPPETS
@@ -249,8 +249,14 @@ class SmolCoder:
 
         return '\n'.join(formatted_output)
 
+    import json
+
     def parse_json_string(self, json_string):
         try:
+            # Remove the '--- END OF LIST ---' if it's present
+            if '--- END OF LIST ---' in json_string:
+                json_string = json_string.replace('--- END OF LIST ---', '').strip()
+            
             # Attempt to parse the JSON string into a Python object
             data = json.loads(json_string)
             
@@ -282,7 +288,8 @@ class SmolCoder:
         
         except json.JSONDecodeError as e:
             return (False, f"Error: Failed to parse JSON. {str(e)}")
-   
+
+
     def extract_code_from_file(self, parsed_data):
         results = {}
 
@@ -458,13 +465,13 @@ class SmolCoder:
                 "End your output with the stop token `--- END OF LIST ---`.\n\n"
                 "DO NOT ADD ANYTHING ELSE TO YOUR RESPONSE.\n\n"
                 "**Example Output:**\n"
-                "[\n"
-                "    {\n"
-                '        "file_path": "/torch/nn/attention/bias.py",\n'
-                '        "selected_functions": ["causal_upper_left", "causal_upper_right"],\n'
-                '        "selected_classes": ["CausalVariant", "CausalBias"]\n'
-                "    },\n"
-                "    {\n"
+            "[\n"
+            "    {\n"
+            '        "file_path": "/torch/nn/attention/bias.py",\n'
+            '        "selected_functions": ["causal_upper_left", "causal_upper_right"],\n'
+            '        "selected_classes": ["CausalVariant", "CausalBias"]\n'
+            "    },\n"
+            "    {\n"
                 '        "file_path": "/torch/fx/passes/reinplace.py",\n'
                 '        "selected_functions": [],\n'
                 '        "selected_classes": ["_ViewType"]\n'
