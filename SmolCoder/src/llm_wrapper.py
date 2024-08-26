@@ -10,7 +10,7 @@ class LLM:
         self.raw = raw # if enabled will not return markdown, this hsouldb e set to true when using llam3 and to false if using phi3
         self.openai = openai
         
-    def query_completion(self, prompt, stop_token=None, seed=42):
+    def query_completion(self, prompt, stop_token=None, seed=69):
         openai_enabled = self.openai[0]
         openai_key = self.openai[1]
 

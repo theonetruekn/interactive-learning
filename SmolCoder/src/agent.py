@@ -22,25 +22,13 @@ class SmolCoder:
     """
     This class handles the communication between the prompting strategy and the agent-computer-interface.
     """
-    def __init__(self, model:LLM, codebase_dir:Path, toolkit:Toolkit, logger, prompting_strategy:str = "ReAct", mode:int = 2) -> None:
-        if prompting_strategy != "ReAct":
-            raise NotImplementedError("Currently, only 'ReAct' is a valid answer.")
-        
+    def __init__(self, model:LLM, codebase_dir:Path, logger, mode:int = 2) -> None:
         """
         Args:
             mode (int): 0 for github_issue_mode, 1 for repoduce_erro_mode, 2 for ReAct Mode
         """
         self.model = model
         self.logger = logger
-        self.ACI = AgentComputerInterface(cwd=codebase_dir, tools=toolkit, logger=self.logger)
-        self.prompting_strategy = PromptingStrategy.create(model, 
-                                                           strategy=prompting_strategy, 
-                                                           toolkit=toolkit, 
-                                                           mode=mode
-                                                           )
-        self.meta_tokenizer = MetaTokenizer(toolkit)
-        self.token_stream: List[MetaToken] = [] # this saves the tokens (Action, Thought, Observation, ...)
-        self._history = [] # this saves the history of the trajectory
         
         if self.logger is not None:
             self.logger.debug("-------------------------------------------------------------------------------------------")
@@ -48,42 +36,17 @@ class SmolCoder:
             self.logger.debug("Started new SmolCoder Run")
             self.logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
                          model, codebase_dir, toolkit, prompting_strategy)
-    
-    def inspect_history(self, n:Optional[int] = None) -> str:
-        if not n:
-            return self._format_history(self._history)
-        else:
-            return self._format_history(self._history[-n:])
-    
-    def _format_history(self, history_input: List[str]) -> str:
-        result = ""
-        for item in history_input:
-            result += item 
 
-        return result 
-
-    def _backtrack_action(self) -> bool:
-        if isinstance(self.token_stream[-1], Action):
-            self.token_stream.pop()
-            return True
-        return False
-
-    def __call__(self, userprompt: str, max_calls: int = 10, start_cwd: str = "") -> str:
+    def __call__(self, userprompt: str, number_of_tries: int = 10, start_cwd: str = "") -> str:
         """
         Note that the userprompt needs to start with "[Question]"
         Also note that the __call__ method right now is tailored for ReAct.
         It might need to be adapted for other prompting strategies.
         """
-        if start_cwd != "":
-            self.ACI._change_cwd(start_cwd)
         
         if self.logger is not None:
             self.logger.info("Starting SmolCoder call with userprompt: %s, max_calls: %d", userprompt, max_calls)
             self.logger.info("Starting current working directory: %s", start_cwd)
-        
-        
-        # This is how mayn tried the llm has to correct itself i.e.  select correct paths.
-        number_of_tries = 1
 
         # ----------------------------------
         # SYSTEMPROMPT
@@ -132,23 +95,20 @@ To repeat:
 Your file list:\n"""
         trajectory += prompt_list_files
 
-        print(trajectory)
-
         # We give the LLM multiple tries to correctly output a list of files
         file_paths = []
         found_paths = False
+
         for _ in range(number_of_tries):
             # Query the LLM for its choice of files.
             llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
-            print("LLM Response: ", llm_response)
-            # Add the reposne of the llm to our trajectory
             trajectory += llm_response
+            print(trajectory)
             trajectory += "\n"
             trajectory += "--------------------------------------------\n"
 
-
-            # Parse the list out of the llm response and check for errors
-            file_paths, error = self.parse_file_paths(llm_response, start_cwd)
+            # Parse the list out of the LLM response and check for errors
+            llm_file_paths, error = self.parse_file_paths(llm_response, start_cwd)
             
             if error:
                 trajectory += "While parsing your provided list of selected file paths an error was found: \n"
@@ -158,24 +118,28 @@ Your file list:\n"""
                 trajectory += "Please try again."
                 trajectory += prompt_list_files
                 continue
-        
+
             # Check if there are any errors
-            validity = self.check_file_paths(file_paths)
-            errors_found = any(status != 'Valid' for status in validity.values())
-            
-            if errors_found:
-                trajectory += "While parsing your provided list of selected file paths an error was found: \n"
-                for path, status in validity.items():
-                    trajectory += f'{path}: {status}\n'
+            errors = self.check_file_paths(llm_file_paths)
+
+            # If there are no errors, append the valid file paths to the main list
+            valid_paths = [path for path in llm_file_paths if path not in errors]
+            file_paths.extend(valid_paths)
+
+            # If there are errors, report them to the LLM and continue the loop
+            if errors:
+                trajectory += "While parsing your provided list of selected file paths, the following errors were found:\n"
+                for path, error_msg in errors.items():
+                    trajectory += f'{path}: {error_msg}\n'
                 
                 trajectory += "--------------------------------------------\n"
                 trajectory += "Please try again."
                 trajectory += prompt_list_files
                 continue
+
             
-            # If we didn't find any error we can go out of the loop
-            found_paths = True
-            break
+            if len(file_paths) == 5:
+                break
         
         print(trajectory)
         print("------------------------------------\n")
@@ -244,7 +208,6 @@ Your class and function list:
             trajectory += "\n"
             trajectory += "--------------------------------------------\n"
 
-            # Parse the list out of the llm response and check for errors
             status, data = self.parse_json_string(llm_response)
             
             if not status:
@@ -378,10 +341,7 @@ Your class and function list:
             
             # Construct the full file path and check if it exists
             full_path = os.path.join(start_cwd, line)
-            if os.path.isfile(full_path):
-                file_paths.append(full_path)
-            else:
-                return [], f'Error: File `{full_path}` does not exist.'
+            file_paths.append(full_path)
 
         # Check if the stop token was found
         if not stop_token_found:
@@ -402,27 +362,27 @@ Your class and function list:
             file_paths (list): A list of file paths to check.
 
         Returns:
-            dict: A dictionary where keys are file paths and values are error messages or 'Valid' if the file is a valid Python file.
+            dict: A dictionary where keys are invalid file paths and values are error messages. 
+                Only paths with errors are included.
         """
-        validity = {}
+        errors = {}
 
         for path in file_paths:
             path = path.strip()
             if not path:
-                validity[path] = 'Error: Path is empty or whitespace.'
+                errors[path] = 'Error: Path is empty or whitespace.'
                 continue
-            
-            if not os.path.isfile(path):
-                validity[path] = 'Error: File does not exist.'
-                continue
-            
-            if not path.lower().endswith('.py'):
-                validity[path] = 'Error: File is not a Python file (does not have a .py extension).'
-                continue
-            
-            validity[path] = 'Valid'
 
-        return validity
+            if not os.path.isfile(path):
+                errors[path] = 'Error: File does not exist.'
+                continue
+
+            if not path.lower().endswith('.py'):
+                errors[path] = 'Error: File is not a Python file (does not have a .py extension).'
+                continue
+
+        return errors
+
     
     def parse_python_file(self, file_path, file_content=None):
         """Parse a Python file to extract class and function definitions with their line numbers.
