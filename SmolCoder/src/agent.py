@@ -63,96 +63,12 @@ class SmolCoder:
         # ----------------------------------
         # FIND SUS FILES
         # ----------------------------------
-
         print("FIND SUS FILES PHASE:\n\n")
-        trajectory = ""
-        trajectory += sysprompt
-        trajectory += "You will now be given the structure of codebase corresponding to the Issue:\n"
-        trajectory += "```\n"
-        trajectory += generate_file_list(start_cwd)
-        trajectory += "\n"
-        trajectory += "```\n"
-        trajectory += "--------------------------------------------\n"
-        trajectory += "Now that you have seen structure of the codebase please select files that you think are relevenat to the issue. "
-        prompt_list_files = """
-Please provide the list of file paths in plain text format, without any whitespaces. Each file path should be on a new line and without any whitespaces. At the end of the list, include the specific stop token `--- END OF LIST ---` to indicate the end of the list.
-
-Please only provide the full path and return at most 5 files. Do not provide commentary.
-The returned files should be separated by new lines.
-DO NOT ADD ANYTHING ELSE TO YOUR RESPONSE.
-
-For example: 
-/documents/report.py
-/pictures/vacation.py
-/music/song.py
---- END OF LIST ---
-
-To repeat:
-- Each file path should be listed on its own line.
-- After the last file path, include the stop token `--- END OF LIST ---` on a new line. This token indicates the end of the file paths list.
-- There should be no additional formatting or characters besides the file paths and the stop token. \n
-- DO NOT USE WHITESPACE
-Your file list:\n"""
-        trajectory += prompt_list_files
-
-        # We give the LLM multiple tries to correctly output a list of files
-        file_paths = []
-        found_paths = False
-
-        for _ in range(number_of_tries):
-            # Query the LLM for its choice of files.
-            llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
-            trajectory += llm_response
-            print(trajectory)
-            trajectory += "\n"
-            trajectory += "--------------------------------------------\n"
-
-            # Parse the list out of the LLM response and check for errors
-            llm_file_paths, error = self.parse_file_paths(llm_response, start_cwd)
-            
-            if error:
-                trajectory += "While parsing your provided list of selected file paths an error was found: \n"
-                trajectory += error
-                trajectory += "\n"
-                trajectory += "--------------------------------------------\n"
-                trajectory += "Please try again."
-                trajectory += prompt_list_files
-                continue
-
-            # Check if there are any errors
-            errors = self.check_file_paths(llm_file_paths)
-
-            # If there are no errors, append the valid file paths to the main list
-            valid_paths = [path for path in llm_file_paths if path not in errors]
-            file_paths.extend(valid_paths)
-
-            # If there are errors, report them to the LLM and continue the loop
-            if errors:
-                trajectory += "While parsing your provided list of selected file paths, the following errors were found:\n"
-                for path, error_msg in errors.items():
-                    trajectory += f'{path}: {error_msg}\n'
-                
-                trajectory += "--------------------------------------------\n"
-                trajectory += "Please try again."
-                trajectory += prompt_list_files
-                continue
-
-            
-            if len(file_paths) == 5:
-                break
-        
-        print(trajectory)
-        print("------------------------------------\n")
-        print("------------------------------------\n")
-        
-        if not found_paths:
-            print("Sucks to suck, LLM didn't find any valid paths.")
-            return trajectory
+        file_paths = find_sus_files(sysprompt, max_files=5, max_tries=5)
 
         # ----------------------------------
         # FIND SUS CLASSES AND FUNCTIONS
         # ----------------------------------
-        
         
         print("SUS CLASSES AND FUNCTION PHASE:\n\n")
         # We now want to ask the LLM for suspicious classes 
@@ -176,26 +92,31 @@ Your file list:\n"""
         trajectory += file_skeletons
         trajectory += "--------------------------------------------\n"
         trajectory += "Now that you have seen, all the classes and function of the relevant files please select classes and function that you think are relevant to the issue. \n"
-        prompt_headers = """
-Please provide a list of classes or functions in json file format. Use an array, where each entry has the following elements: `file_path`, `selected_functions` and `selected_classes`, where `file_path` point towards the file within which are the `selected_functions` and `selected_classes` which are arrays. End your output with the stop token `--- END OF LIST ---`.
+        prompt_headers = (
+            "Please provide a list of classes or functions in JSON file format. "
+            "Use an array, where each entry has the following elements: `file_path`, "
+            "`selected_functions`, and `selected_classes`. The `file_path` should point to the file "
+            "containing the `selected_functions` and `selected_classes`, which are arrays. "
+            "End your output with the stop token `--- END OF LIST ---`.\n\n"
+            
+            "**Example Output:**\n"
+            "[\n"
+            "    {\n"
+            '        "file_path": "/torch/nn/attention/bias.py",\n'
+            '        "selected_functions": ["causal_upper_left", "causal_upper_right"],\n'
+            '        "selected_classes": ["CausalVariant", "CausalBias"]\n'
+            "    },\n"
+            "    {\n"
+            '        "file_path": "/torch/fx/passes/reinplace.py",\n'
+            '        "selected_functions": [],\n'
+            '        "selected_classes": ["_ViewType"]\n'
+            "    }\n"
+            "]\n"
+            "--- END OF LIST ---\n\n"
+            
+            "Your class and function list:\n"
+        )
 
-**Example Output:**
-[
-    {
-        "file_path": "/torch/nn/attention/bias.py",
-        "selected_functions": [causal_upper_left, causal_upper_right],
-        "selected_classes": [CausalVariant, CausalBias],
-    },
-    {
-        "file_path": "/torch/fx/passes/reinplace.py",
-        "selected_functions": [],
-        "selected_classes": [_ViewType],
-    },
-]
---- END OF LIST ---
-
-Your class and function list:
-"""
         trajectory += prompt_headers
         data = None
         found_headers = False
@@ -230,7 +151,6 @@ Your class and function list:
         if not found_headers:
             print("Sucks to suck, LLM didn't find any valid classes/functions.")
             return trajectory
-
 
         # ----------------------------------
         # FIND SUS CODE SNIPPETS
@@ -300,88 +220,6 @@ Your class and function list:
             return trajectory
 
         return "The LLM model has choosen the following functions/classes: " + str(data)
-
-
-
-
-    def parse_file_paths(self, text, start_cwd, stop_token='--- END OF LIST ---'):
-        """
-        Parses a list of file paths from the given plain text.
-
-        Args:
-            text (str): The plain text input containing file paths and the stop token.
-            stop_token (str): The token indicating the end of the list. Default is '--- END OF LIST ---'.
-
-        Returns:
-            tuple: A tuple containing a list of file paths and an error message (if any).
-        """
-        if not isinstance(text, str):
-            return [], 'Error: Input is not a valid string.'
-
-        if not isinstance(stop_token, str) or not stop_token:
-            return [], 'Error: Stop token must be a non-empty string.'
-
-        # Split the text into lines and initialize variables
-        lines = text.strip().split('\n')
-        file_paths = []
-        
-        if not lines:
-            return [], 'Error: The input is empty or only contains whitespace.'
-
-        stop_token_found = False
-
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue  # Skip empty lines
-            
-            if line == stop_token:
-                stop_token_found = True
-                break
-            
-            # Construct the full file path and check if it exists
-            full_path = os.path.join(start_cwd, line)
-            file_paths.append(full_path)
-
-        # Check if the stop token was found
-        if not stop_token_found:
-            return [], f'Error: Missing stop token `{stop_token}`.'
-
-        # If there are lines after the stop token, return an error
-        remaining_lines = lines[lines.index(stop_token) + 1:]
-        if any(line.strip() for line in remaining_lines):
-            return [], f'Error: Content found after the stop token `{stop_token}`.'
-
-        return file_paths, None
-
-    def check_file_paths(self, file_paths):
-        """
-        Checks if all file paths in the given list are valid Python files (i.e., they exist on the filesystem and have a .py extension).
-
-        Args:
-            file_paths (list): A list of file paths to check.
-
-        Returns:
-            dict: A dictionary where keys are invalid file paths and values are error messages. 
-                Only paths with errors are included.
-        """
-        errors = {}
-
-        for path in file_paths:
-            path = path.strip()
-            if not path:
-                errors[path] = 'Error: Path is empty or whitespace.'
-                continue
-
-            if not os.path.isfile(path):
-                errors[path] = 'Error: File does not exist.'
-                continue
-
-            if not path.lower().endswith('.py'):
-                errors[path] = 'Error: File is not a Python file (does not have a .py extension).'
-                continue
-
-        return errors
 
     
     def parse_python_file(self, file_path, file_content=None):
@@ -564,7 +402,6 @@ Your class and function list:
 
         return results
 
-
     def save_extracted_code_as_string(self, extracted_code):
         """
         Takes as input the ouput of `format_parsed_data`, if its output has a class that doesnt exist, no error, but gets ignored.
@@ -583,3 +420,173 @@ Your class and function list:
             return "Error: No code was extracted."
         
         return code_string
+
+    def prompt_list_files(n=5):
+        return (
+            "Please provide the list of file paths in plain text format, without any whitespaces. "
+            "Each file path should be on a new line and without any whitespaces. "
+            "At the end of the list, include the specific stop token `--- END OF LIST ---` to indicate "
+            "the end of the list.\n\n"
+            f"Please only provide the full path and return at most {n} files. Do not provide commentary.\n"
+            "The returned files should be separated by new lines.\n"
+            "DO NOT ADD ANYTHING ELSE TO YOUR RESPONSE.\n\n"
+            "For example:\n"
+            "/documents/report.py\n"
+            "/pictures/vacation.py\n"
+            "/music/song.py\n"
+            "--- END OF LIST ---\n\n"
+            "To repeat:\n"
+            "- Each file path should be listed on its own line.\n"
+            "- After the last file path, include the stop token `--- END OF LIST ---` on a new line. "
+            "This token indicates the end of the file paths list.\n"
+            "- There should be no additional formatting or characters besides the file paths and the stop token.\n"
+            "- DO NOT USE WHITESPACE\n"
+            "Your file list:\n"
+        )
+
+    def find_sus_files(sysprompt, max_tries=5, max_files=5) -> List[str]:
+        trajectory = ""
+        trajectory += sysprompt
+        trajectory += "You will now be given the structure of codebase corresponding to the Issue:\n"
+        trajectory += "```\n"
+        trajectory += generate_file_list(start_cwd)
+        trajectory += "\n"
+        trajectory += "```\n"
+        trajectory += "--------------------------------------------\n"
+        trajectory += "Now that you have seen structure of the codebase please select files that you think are relevenat to the issue. "
+        
+        trajectory += prompt_list_files(n=max_files)
+
+        # We give the LLM multiple tries to correctly output a list of files
+        file_paths = []
+        found_paths = False
+
+        for _ in range(number_of_tries):
+            
+            llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
+            trajectory += llm_response
+            print(trajectory)
+            trajectory += "\n"
+            trajectory += "--------------------------------------------\n"
+
+            # Parse the llm response to see if the output is correctly structured
+            llm_file_paths, error = self.parse_file_paths(llm_response, start_cwd)
+            
+            if error:
+                trajectory += "While parsing your provided list of selected file paths an error was found: \n"
+                trajectory += error
+                trajectory += "\n"
+                trajectory += "--------------------------------------------\n"
+                trajectory += "Please try again."
+                trajectory += prompt_list_files(max_files - len(file_paths))
+                continue
+
+            # Check if the files exist and are python files
+            errors = self.check_file_paths(llm_file_paths)
+
+            # append the valid file paths to the main list
+            valid_paths = [path for path in llm_file_paths if path not in errors]
+            file_paths.extend(valid_paths)
+
+            # If there are errors, report them to the LLM and continue the loop
+            if errors:
+                trajectory += "While parsing your provided list of selected file paths, the following errors were found:\n"
+                for path, error_msg in errors.items():
+                    trajectory += f'{path}: {error_msg}\n'
+                
+                trajectory += "--------------------------------------------\n"
+                trajectory += "Please try again."
+                trajectory += prompt_list_files(max_files - len(file_paths))
+                continue
+
+            if len(file_paths) == 5:
+                break
+        
+        print(trajectory)
+        print("------------------------------------\n")
+        
+        if not file_paths:
+            print("Sucks to suck, LLM didn't find any paths.")
+        else:
+            print(f"Found the following paths: ", str(file_paths))
+
+        return file_paths
+
+    def parse_file_paths(self, text, start_cwd, stop_token='--- END OF LIST ---'):
+        """
+        Parses a list of file paths from the given plain text.
+
+        Args:
+            text (str): The plain text input containing file paths and the stop token.
+            stop_token (str): The token indicating the end of the list. Default is '--- END OF LIST ---'.
+
+        Returns:
+            tuple: A tuple containing a list of file paths and an error message (if any).
+        """
+        if not isinstance(text, str):
+            return [], 'Error: Input is not a valid string.'
+
+        if not isinstance(stop_token, str) or not stop_token:
+            return [], 'Error: Stop token must be a non-empty string.'
+
+        # Split the text into lines and initialize variables
+        lines = text.strip().split('\n')
+        file_paths = []
+        
+        if not lines:
+            return [], 'Error: The input is empty or only contains whitespace.'
+
+        stop_token_found = False
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue  # Skip empty lines
+            
+            if line == stop_token:
+                stop_token_found = True
+                break
+            
+            # Construct the full file path and check if it exists
+            full_path = os.path.join(start_cwd, line)
+            file_paths.append(full_path)
+
+        # Check if the stop token was found
+        if not stop_token_found:
+            return [], f'Error: Missing stop token `{stop_token}`.'
+
+        # If there are lines after the stop token, return an error
+        remaining_lines = lines[lines.index(stop_token) + 1:]
+        if any(line.strip() for line in remaining_lines):
+            return [], f'Error: Content found after the stop token `{stop_token}`.'
+
+        return file_paths, None
+
+    def check_file_paths(self, file_paths):
+        """
+        Checks if all file paths in the given list are valid Python files (i.e., they exist on the filesystem and have a .py extension).
+
+        Args:
+            file_paths (list): A list of file paths to check.
+
+        Returns:
+            dict: A dictionary where keys are invalid file paths and values are error messages. 
+                Only paths with errors are included.
+        """
+        errors = {}
+
+        for path in file_paths:
+            path = path.strip()
+            if not path:
+                errors[path] = 'Error: Path is empty or whitespace.'
+                continue
+
+            if not os.path.isfile(path):
+                errors[path] = 'Error: File does not exist.'
+                continue
+
+            if not path.lower().endswith('.py'):
+                errors[path] = 'Error: File is not a Python file (does not have a .py extension).'
+                continue
+
+        return errors
