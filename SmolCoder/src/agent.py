@@ -35,7 +35,7 @@ class SmolCoder:
             self.logger.debug("-------------------------------------------------------------------------------------------")
             self.logger.debug("Started new SmolCoder Run")
             self.logger.debug("SmolCoder initialized with model: %s, codebase_dir: %s, toolkit: %s, prompting_strategy: %s",
-                         model, codebase_dir, toolkit, prompting_strategy)
+                         model, codebase_dir)
 
     def __call__(self, userprompt: str, number_of_tries: int = 10, start_cwd: str = "") -> str:
         """
