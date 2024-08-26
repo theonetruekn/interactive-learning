@@ -22,13 +22,15 @@ class SmolCoder:
     """
     This class handles the communication between the prompting strategy and the agent-computer-interface.
     """
-    def __init__(self, model:LLM, codebase_dir:Path, logger, mode:int = 2) -> None:
+    def __init__(self, phase: int, model:LLM, codebase_dir:Path, logger, mode:int = 2) -> None:
         """
         Args:
             mode (int): 0 for github_issue_mode, 1 for repoduce_erro_mode, 2 for ReAct Mode
+            phase (int): for testing purposes only, 0 starts with finding sus files, 1 starts with finding sus headers 
         """
         self.model = model
         self.logger = logger
+        self.phase = phase
         
         if self.logger is not None:
             self.logger.debug("-------------------------------------------------------------------------------------------")
@@ -59,19 +61,29 @@ class SmolCoder:
         sysprompt += "\n"
         sysprompt += "--------------------------------------------\n"
         
-
         # ----------------------------------
         # FIND SUS FILES
         # ----------------------------------
-        print("FIND SUS FILES PHASE:\n\n")
-        file_paths = self.find_sus_files(sysprompt, start_cwd, max_files=5, max_tries=5)
+        if self.phase == 0:
+            print("FIND SUS FILES PHASE:\n\n")
+            file_paths = self.find_sus_files(sysprompt, start_cwd, max_files=5, max_tries=5)
 
         # ----------------------------------
         # FIND SUS CLASSES AND FUNCTIONS
         # ----------------------------------
+        if self.phase == 1:
+            # Result for df.iloc[0]["problem_statement"]
+            file_paths = [
+                            "src/sqlfluff/core/config.py"
+                            "src/sqlfluff/core/rules/linter.py"
+                            "src/sqlfluff/core/linter/linted_file.py"
+                            "src/sqlfluff/core/parser/lexer.py"
+                            "src/sqlfluff/core/parser/matchable.py"
+                          ]
 
-        print("SUS CLASSES AND FUNCTION PHASE:\n\n")
-        data = self.find_sus_headers(file_paths, sysprompt, max_headers=5, max_tries=5)
+            # max_headers not working yet.
+            print("SUS CLASSES AND FUNCTION PHASE:\n\n")
+            data = self.find_sus_headers(sysprompt, file_paths, max_headers=5, max_tries=5)
         
         return ""
 
