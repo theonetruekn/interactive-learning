@@ -75,7 +75,6 @@ class SmolCoder:
             # Result for df.iloc[0]["problem_statement"]
             file_paths = [
                             "./repos/sqlfluff/src/sqlfluff/core/config.py",
-                            "./repos/sqlfluff/src/sqlfluff/core/rules/linter.py",
                             "./repos/sqlfluff/src/sqlfluff/core/linter/linted_file.py",
                             "./repos/sqlfluff/src/sqlfluff/core/parser/lexer.py",
                             "./repos/sqlfluff/src/sqlfluff/core/parser/matchable.py",
