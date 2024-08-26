@@ -45,10 +45,13 @@ def generate_tree(root_dir):
 def generate_file_list(root_dir, prefix=""):
     # Get all files and directories in the current root_dir
     entries = [entry for entry in os.listdir(root_dir) if not entry.startswith('.')]
-    
+
+    # Filter Python files
+    py_files = [f for f in entries if os.path.isfile(os.path.join(root_dir, f)) and f.endswith('.py')]
+
     # Separate files and directories
-    files = [f for f in entries if os.path.isfile(os.path.join(root_dir, f))]
-    directories = [d for d in entries if os.path.isdir(os.path.join(root_dir, d))]
+    files = [f for f in py_files if os.path.isfile(os.path.join(root_dir, f))]
+    directories = [d for d in py_files if os.path.isdir(os.path.join(root_dir, d))]
     
     # Create a list to hold the output lines
     lines = []
