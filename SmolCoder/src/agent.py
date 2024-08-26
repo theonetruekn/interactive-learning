@@ -74,11 +74,11 @@ class SmolCoder:
         if self.phase == 1:
             # Result for df.iloc[0]["problem_statement"]
             file_paths = [
-                            "src/sqlfluff/core/config.py"
-                            "src/sqlfluff/core/rules/linter.py"
-                            "src/sqlfluff/core/linter/linted_file.py"
-                            "src/sqlfluff/core/parser/lexer.py"
-                            "src/sqlfluff/core/parser/matchable.py"
+                            "./repos/sqlfluff/src/sqlfluff/core/config.py"
+                            "./repos/sqlfluff/src/sqlfluff/core/rules/linter.py"
+                            "./repos/sqlfluff/src/sqlfluff/core/linter/linted_file.py"
+                            "./repos/sqlfluff/src/sqlfluff/core/parser/lexer.py"
+                            "./repos/sqlfluff/src/sqlfluff/core/parser/matchable.py"
                           ]
 
             # max_headers not working yet.
