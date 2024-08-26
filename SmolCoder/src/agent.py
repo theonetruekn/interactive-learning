@@ -449,6 +449,32 @@ class SmolCoder:
 
         return file_paths
     
+    def prompt_list_headers(self, max_headers=5):
+        return (
+                "Please provide a list of classes or functions in JSON file format. "
+                "Use an array, where each entry has the following elements: `file_path`, "
+                "`selected_functions`, and `selected_classes`. The `file_path` should point to the file "
+                "containing the `selected_functions` and `selected_classes`, which are arrays. "
+                            f"Please only provide the full path and return at most {max_headers} files. Do not provide commentary.\n"
+                "End your output with the stop token `--- END OF LIST ---`.\n\n"
+                "DO NOT ADD ANYTHING ELSE TO YOUR RESPONSE.\n\n"
+                "**Example Output:**\n"
+                "[\n"
+                "    {\n"
+                '        "file_path": "/torch/nn/attention/bias.py",\n'
+                '        "selected_functions": ["causal_upper_left", "causal_upper_right"],\n'
+                '        "selected_classes": ["CausalVariant", "CausalBias"]\n'
+                "    },\n"
+                "    {\n"
+                '        "file_path": "/torch/fx/passes/reinplace.py",\n'
+                '        "selected_functions": [],\n'
+                '        "selected_classes": ["_ViewType"]\n'
+                "    }\n"
+                "]\n"
+                "--- END OF LIST ---\n\n"
+                
+                "Your class and function list:\n"
+            )
 
     def find_sus_headers(self, sysprompt, file_paths, max_headers, max_tries):
         # We now want to ask the LLM for suspicious classes 
@@ -473,32 +499,7 @@ class SmolCoder:
             trajectory += file_skeletons
             trajectory += "--------------------------------------------\n"
             trajectory += "Now that you have seen, all the classes and function of the relevant files please select classes and function that you think are relevant to the issue. \n"
-            prompt_headers = (
-                "Please provide a list of classes or functions in JSON file format. "
-                "Use an array, where each entry has the following elements: `file_path`, "
-                "`selected_functions`, and `selected_classes`. The `file_path` should point to the file "
-                "containing the `selected_functions` and `selected_classes`, which are arrays. "
-                "End your output with the stop token `--- END OF LIST ---`.\n\n"
-                
-                "**Example Output:**\n"
-                "[\n"
-                "    {\n"
-                '        "file_path": "/torch/nn/attention/bias.py",\n'
-                '        "selected_functions": ["causal_upper_left", "causal_upper_right"],\n'
-                '        "selected_classes": ["CausalVariant", "CausalBias"]\n'
-                "    },\n"
-                "    {\n"
-                '        "file_path": "/torch/fx/passes/reinplace.py",\n'
-                '        "selected_functions": [],\n'
-                '        "selected_classes": ["_ViewType"]\n'
-                "    }\n"
-                "]\n"
-                "--- END OF LIST ---\n\n"
-                
-                "Your class and function list:\n"
-            )
-
-            trajectory += prompt_headers
+            trajectory += self.prompt_list_headers(max_headers)
         data = None
         found_headers = False
         for _ in range(max_tries):
@@ -517,7 +518,7 @@ class SmolCoder:
                 trajectory += "\n"
                 trajectory += "--------------------------------------------\n"
                 trajectory += "Please try again."
-                trajectory += self.prompt_list_files
+                trajectory += self.prompt_list_headers(max_headers)
                 continue
             
             # If we didn't find any error we can go out of the loop
