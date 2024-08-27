@@ -91,19 +91,20 @@ class SmolCoder:
 
         if self.phase <= 2:
             print("SUS CODE SNIPPET PHASE: \n\n")
-            data = [
-                    {
-                        "file_path": "./repos/sqlfluff/src/sqlfluff/core/parser/lexer.py",
-                        "selected_functions": [
-                            "_iter_segments",
-                            "_handle_zero_length_slice"
-                        ],
-                        "selected_classes": [
-                            "BlockTracker",
-                            "Lexer"
-                        ]
-                    },
-                ]
+            if self.phase == 2:
+                data = [
+                        {
+                            "file_path": "./repos/sqlfluff/src/sqlfluff/core/parser/lexer.py",
+                            "selected_functions": [
+                                "_iter_segments",
+                                "_handle_zero_length_slice"
+                            ],
+                            "selected_classes": [
+                                "BlockTracker",
+                                "Lexer"
+                            ]
+                        },
+                    ]
             return self.find_sus_code_snippets(sysprompt, data, max_tries=2)
 
     
