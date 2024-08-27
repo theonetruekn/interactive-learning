@@ -587,13 +587,16 @@ class SmolCoder:
         return errors
 
     def find_sus_code_snippets(self, sysprompt, data, max_tries=5):
-        relevant_snippets = []
+        relevant_data = []
 
         # Iterate through each element in the JSON data
         for element in data:
             file_path = element.get("file_path")
             selected_functions = element.get("selected_functions", [])
             selected_classes = element.get("selected_classes", [])
+            
+            relevant_functions = []
+            relevant_classes = []
 
             # Process each function in the selected_functions list
             for func in selected_functions:
@@ -608,7 +611,7 @@ class SmolCoder:
                 # Determine relevance using the LLM
                 response = self.evaluate_relevance(sysprompt, code_string, max_tries)
                 if response == "YES.":
-                    relevant_snippets.append(f"{file_path}::{func}")
+                    relevant_functions.append(func)
 
             # Process each class in the selected_classes list
             for cls in selected_classes:
@@ -622,14 +625,23 @@ class SmolCoder:
                 # Determine relevance using the LLM
                 response = self.evaluate_relevance(sysprompt, code_string, max_tries)
                 if response == "YES.":
-                    relevant_snippets.append(f"{file_path}::{cls}")
+                    relevant_classes.append(cls)
 
-        if not relevant_snippets:
+            # Add the relevant functions and classes to the output if any exist
+            if relevant_functions or relevant_classes:
+                relevant_data.append({
+                    "file_path": file_path,
+                    "selected_functions": relevant_functions,
+                    "selected_classes": relevant_classes
+                })
+
+        if not relevant_data:
             print("No relevant classes/functions were found.")
         else:
-            print("Relevant classes/functions identified: ", relevant_snippets)
+            print("Relevant classes/functions identified: ", relevant_data)
 
-        return relevant_snippets
+        # Return the relevant data in JSON format
+        return json.dumps(relevant_data, indent=4)
 
     def evaluate_relevance(self, sysprompt, code_string, max_tries=5):
         trajectory = (
