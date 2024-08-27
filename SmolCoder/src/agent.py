@@ -202,6 +202,11 @@ class SmolCoder:
         return '\n'.join(formatted_output)
 
     def parse_json_string(self, json_string):
+        """
+        Returns:
+            Valid: True when json is vlaid otherwise false
+            data: Either the json data, or an error code
+        """
         try:
             # Remove the '--- END OF LIST ---' if it's present
             if '--- END OF LIST ---' in json_string:
@@ -239,13 +244,13 @@ class SmolCoder:
         except json.JSONDecodeError as e:
             return (False, f"Error: Failed to parse JSON. {str(e)}")
     
-
     def validate_json_classes_functions(self, data):
         """
-        Return:
-            Valid: True when no error was found otherwise false
-            Error_string: contains a string describing all errors
-        """
+            Return:
+                Valid: True when no error was found otherwise false
+                Error_string: contains a string describing all errors
+                filtered_data: only contains data which is correct
+            """
         def get_definitions(file_content):
             """Parse the Python file and return a dictionary with the classes and functions found."""
             tree = ast.parse(file_content)
@@ -261,6 +266,7 @@ class SmolCoder:
 
         valid = True
         error_messages = []
+        filtered_data = []
 
         for item in data:
             file_path = item["file_path"]
@@ -270,7 +276,7 @@ class SmolCoder:
             if not os.path.exists(file_path):
                 valid = False
                 error_messages.append(f"File not found: {file_path}")
-                continue
+                continue  # Skip to the next item, do not add this file to filtered_data
 
             try:
                 with open(file_path, 'r') as file:
@@ -280,6 +286,10 @@ class SmolCoder:
                 
                 missing_functions = selected_functions - definitions["functions"]
                 missing_classes = selected_classes - definitions["classes"]
+
+                # Filter out missing functions and classes
+                valid_functions = selected_functions - missing_functions
+                valid_classes = selected_classes - missing_classes
 
                 if missing_functions:
                     valid = False
@@ -292,13 +302,19 @@ class SmolCoder:
                         f"Missing classes in {file_path}: {', '.join(missing_classes)}"
                     )
 
+                if valid_functions or valid_classes:
+                    filtered_data.append({
+                        "file_path": file_path,
+                        "selected_functions": list(valid_functions),
+                        "selected_classes": list(valid_classes)
+                    })
+
             except Exception as e:
                 valid = False
                 error_messages.append(f"Error processing {file_path}: {str(e)}")
 
-        return valid, "\n".join(error_messages)
-
-
+        return valid, "\n".join(error_messages), filtered_data
+   
     def prompt_list_files(self, n=5):
         return (
             "Please provide the list of file paths in plain text format, without any whitespaces. "
@@ -464,16 +480,15 @@ class SmolCoder:
                 continue
             
             # This checks if the functions and classes inside the json exist
-            valid, error = self.validate_json_classes_functions(data)
+            valid, error, filtered_data = self.validate_json_classes_functions(data)
             if not valid:
                 trajectory += "While parsing your provided a list of selected classes and functions an error was found: \n"
-                trajectory += data
+                trajectory += error
                 trajectory += "\n"
                 trajectory += "--------------------------------------------\n"
                 trajectory += "Please try again."
                 trajectory += self.prompt_list_headers(max_headers)
                 continue
-
 
             # If we didn't find any error we can go out of the loop
             found_headers = True
@@ -484,8 +499,10 @@ class SmolCoder:
         print("------------------------------------\n")
         
         if not found_headers:
-            print("Sucks to suck, LLM didn't find any valid classes/functions.")
+            data = filtered_data
+            print("Sucks to suck, LLM didn't find only valid classes/functions.")
         else:
+            data = data
             print("found the following data: ", str(data))
 
         return data
