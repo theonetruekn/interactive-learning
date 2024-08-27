@@ -90,7 +90,6 @@ class SmolCoder:
 
         if self.phase == 2:
             print("SUS CODE SNIPPET PHASE: \n\n")
-
             data = [
                     {
                         "file_path": "./repos/sqlfluff/src/sqlfluff/core/parser/lexer.py",
@@ -100,19 +99,11 @@ class SmolCoder:
                         ],
                         "selected_classes": [
                             "BlockTracker",
-                            "LexMatch",
-                            "StringLexer",
-                            "RegexLexer",
                             "Lexer"
                         ]
                     },
-                    {
-                        "file_path": "./repos/sqlfluff/src/sqlfluff/core/parser/matchable.py",
-                        "selected_functions": [],
-                        "selected_classes": ["Matchable"]
-                    }
                 ]
-            return self.find_sus_code_snippets(sysprompt, data)
+            return self.find_sus_code_snippets(sysprompt, data, max_tries=2)
 
     
     def parse_python_file(self, file_path, file_content=None):
@@ -504,7 +495,7 @@ class SmolCoder:
         return errors
 
     def find_sus_code_snippets(self, sysprompt, data, max_tries=5):
-        results = {}
+        relevant_snippets = []
 
         # Iterate through each element in the JSON data
         for element in data:
@@ -524,8 +515,8 @@ class SmolCoder:
 
                 # Determine relevance using the LLM
                 response = self.evaluate_relevance(sysprompt, code_string, max_tries)
-                if response:
-                    results[f"{file_path}::{func}"] = response
+                if response == "YES.":
+                    relevant_snippets.append(f"{file_path}::{func}")
 
             # Process each class in the selected_classes list
             for cls in selected_classes:
@@ -538,15 +529,15 @@ class SmolCoder:
 
                 # Determine relevance using the LLM
                 response = self.evaluate_relevance(sysprompt, code_string, max_tries)
-                if response:
-                    results[f"{file_path}::{cls}"] = response
+                if response == "YES.":
+                    relevant_snippets.append(f"{file_path}::{cls}")
 
-        if not results:
+        if not relevant_snippets:
             print("No relevant classes/functions were found.")
         else:
-            print("Relevant classes/functions identified: ", results)
+            print("Relevant classes/functions identified: ", relevant_snippets)
 
-        return results
+        return relevant_snippets
 
     def evaluate_relevance(self, sysprompt, code_string, max_tries=5):
         trajectory = (
@@ -576,7 +567,7 @@ class SmolCoder:
                 trajectory += "\nYour response was invalid. Please respond with either 'YES.' or 'NO.' only."
 
         print("Failed to obtain a valid response from the LLM.")
-        return None
+        return "NO."
         
     def extract_code_snippets(self, file_path, func_name=None, class_name=None):
         try:
