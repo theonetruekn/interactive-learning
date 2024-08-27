@@ -84,76 +84,35 @@ class SmolCoder:
             print("SUS CLASSES AND FUNCTION PHASE:\n\n")
             data = self.find_sus_headers(sysprompt, file_paths, max_headers=5, max_tries=5)
         
-        # return ""
-
         # ----------------------------------
         # FIND SUS CODE SNIPPETS
         # ----------------------------------
 
-        print("CODE SNIPPET PHASE: \n\n")
-        # We now want to ask the LLM for suspicious classes 
-        # For that we reset the context, because our context is limited
-        trajectory = ""
-        trajectory += sysprompt
-        trajectory += "In a previous iteration you've already found classes and fucntion that might be relevant to the described Issue. We now want to look closer and identify code snippets that are relevant to the described Issue. For this purpose you will receive a list of source code for these classes and function and you should choose the top 5 classes or functions that are relevant to the described issue.\n"
-        trajectory += "--------------------------------------------\n"
-        trajectory += "You will now be given the source code of the classes and function:\n"    
-        # If a class/funciton doesn't exist it gets ignored.
-        # Build the releveant source code
-        extracted_code = self.extract_code_from_file(data)
-        code_string = self.save_extracted_code_as_string(extracted_code)
-        
-        # TODO
-        # FUCK I HATE IT HERE
-        # WHAT THER FUCK DO I DO HERE?????
-        # LETS JUST ACT LIKE THIS DOESNT HAPPEN
-        # checking for error should happen in the previous phase
-        # why even bother, llama3.1 cant even get pass the first step of seelcting files.
-        if code_string.startswith("Error"):
-            print("Bad luck bucko! Your agent just pissed itself.")
-            pass
+        if self.phase == 2:
+            print("SUS CODE SNIPPET PHASE: \n\n")
 
-        trajectory += code_string
-        trajectory += "--------------------------------------------\n"
-        trajectory += "Now that you have seen, all the classes and function of the relevant files please select classes and function that you think are relevant to the issue. \n"
-
-        trajectory += prompt_headers
-        data = None
-        found_headers = False
-        for _ in range(number_of_tries):
-            # Query the LLM for its choice of classes/functions.
-            llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
-            
-            # Add the reponse of the llm to our trajectory
-            trajectory += llm_response
-            trajectory += "\n"
-            trajectory += "--------------------------------------------\n"
-
-            # Parse the list out of the llm response and check for errors
-            status, data = self.parse_json_string(llm_response)
-            
-            if not status:
-                trajectory += "While parsing your provided a list of selected classes and functions an error was found: \n"
-                trajectory += data
-                trajectory += "\n"
-                trajectory += "--------------------------------------------\n"
-                trajectory += "Please try again."
-                trajectory += self.prompt_list_files
-                continue
-            
-            # If we didn't find any error we can go out of the loop
-            found_headers = True
-            break
-        
-        print(trajectory)
-        print("------------------------------------\n")
-        print("------------------------------------\n")
-        
-        if not found_headers:
-            print("Sucks to suck, LLM didn't find any valid classes/functions.")
-            return trajectory
-
-        return "The LLM model has choosen the following functions/classes: " + str(data)
+            data = [
+                    {
+                        "file_path": "./repos/sqlfluff/src/sqlfluff/core/parser/lexer.py",
+                        "selected_functions": [
+                            "_iter_segments",
+                            "_handle_zero_length_slice"
+                        ],
+                        "selected_classes": [
+                            "BlockTracker",
+                            "LexMatch",
+                            "StringLexer",
+                            "RegexLexer",
+                            "Lexer"
+                        ]
+                    },
+                    {
+                        "file_path": "./repos/sqlfluff/src/sqlfluff/core/parser/matchable.py",
+                        "selected_functions": [],
+                        "selected_classes": ["Matchable"]
+                    }
+                ]
+            return self.find_sus_code_snippets(sysprompt, data)
 
     
     def parse_python_file(self, file_path, file_content=None):
@@ -249,8 +208,6 @@ class SmolCoder:
 
         return '\n'.join(formatted_output)
 
-    import json
-
     def parse_json_string(self, json_string):
         try:
             # Remove the '--- END OF LIST ---' if it's present
@@ -289,80 +246,6 @@ class SmolCoder:
         except json.JSONDecodeError as e:
             return (False, f"Error: Failed to parse JSON. {str(e)}")
 
-
-    def extract_code_from_file(self, parsed_data):
-        results = {}
-
-        for item in parsed_data:
-            file_path = item.get('file_path')
-            selected_functions = item.get('selected_functions')
-            selected_classes = item.get('selected_classes')
-
-            # Error detection: Check if file_path is empty
-            if not file_path:
-                results["Error"] = "Error: 'file_path' is empty or missing."
-                continue
-
-            # Check if functions and classes are provided
-            if not selected_functions and not selected_classes:
-                results[file_path] = "Error: No functions or classes specified."
-                continue
-
-            try:
-                # Read the content of the Python file
-                with open(file_path, 'r') as file:
-                    file_content = file.read()
-
-                # Parse the file content into an AST
-                tree = ast.parse(file_content)
-                
-                # Store the results for this file
-                file_results = {}
-
-                # Helper function to extract source code from AST nodes
-                def get_source(node):
-                    return ast.get_source_segment(file_content, node)
-
-                # Traverse the AST to find functions and classes
-                for node in ast.walk(tree):
-                    if isinstance(node, ast.FunctionDef) and node.name in selected_functions:
-                        file_results[node.name] = get_source(node)
-                    elif isinstance(node, ast.ClassDef) and node.name in selected_classes:
-                        file_results[node.name] = get_source(node)
-
-                # Error detection: Check if no functions or classes were found
-                if not file_results:
-                    results[file_path] = "Error: No matching functions or classes found."
-                else:
-                    results[file_path] = file_results
-
-            except FileNotFoundError:
-                results[file_path] = f"Error: The file at '{file_path}' was not found."
-            except Exception as e:
-                results[file_path] = f"Error: Something went wrong while processing {file_path}. {str(e)}"
-
-        return results
-
-    def save_extracted_code_as_string(self, extracted_code):
-        """
-        Takes as input the ouput of `format_parsed_data`, if its output has a class that doesnt exist, no error, but gets ignored.
-        """
-        code_string = ""
-        
-        for file_path, code in extracted_code.items():
-            if isinstance(code, str) and code.startswith("Error"):
-                code_string += f"{code}\n"
-            else:
-                code_string += f"File: {file_path}\n"
-                for name, source in code.items():
-                    code_string += f"\n{name}:\n{source}\n"
-        
-        if not code_string.strip():
-            return "Error: No code was extracted."
-        
-        return code_string
-
-
     def prompt_list_files(self, n=5):
         return (
             "Please provide the list of file paths in plain text format, without any whitespaces. "
@@ -385,7 +268,6 @@ class SmolCoder:
             "- DO NOT USE WHITESPACE\n"
             "Your file list:\n"
         )
-
 
     def find_sus_files(self, sysprompt, start_cwd, max_tries=5, max_files=5) -> List[str]:
         trajectory = ""
@@ -542,12 +424,6 @@ class SmolCoder:
 
         return data
 
-
-
-        
-
-
-
     def parse_file_paths(self, text, start_cwd, stop_token='--- END OF LIST ---'):
         """
         Parses a list of file paths from the given plain text.
@@ -626,3 +502,121 @@ class SmolCoder:
                 continue
 
         return errors
+
+    def find_sus_code_snippets(self, sysprompt, data, max_tries=5):
+        results = {}
+
+        # Iterate through each element in the JSON data
+        for element in data:
+            file_path = element.get("file_path")
+            selected_functions = element.get("selected_functions", [])
+            selected_classes = element.get("selected_classes", [])
+
+            # Process each function in the selected_functions list
+            for func in selected_functions:
+                # Extract the code snippet for the current function
+                code_string = self.extract_code_snippets(file_path, func_name=func, class_name=None)
+                
+                # Handle extraction errors
+                if code_string.startswith("Error"):
+                    print(f"Error while extracting code for function '{func}' in file '{file_path}'")
+                    continue
+
+                # Determine relevance using the LLM
+                response = self.evaluate_relevance(sysprompt, code_string, max_tries)
+                if response:
+                    results[f"{file_path}::{func}"] = response
+
+            # Process each class in the selected_classes list
+            for cls in selected_classes:
+                # Extract the code snippet for the current class
+                code_string = self.extract_code_snippets(file_path, func_name=None, class_name=cls)
+                
+                if code_string.startswith("Error"):
+                    print(f"Error while extracting code for class '{cls}' in file '{file_path}'")
+                    continue
+
+                # Determine relevance using the LLM
+                response = self.evaluate_relevance(sysprompt, code_string, max_tries)
+                if response:
+                    results[f"{file_path}::{cls}"] = response
+
+        if not results:
+            print("No relevant classes/functions were found.")
+        else:
+            print("Relevant classes/functions identified: ", results)
+
+        return results
+
+    def evaluate_relevance(self, sysprompt, code_string, max_tries=5):
+        trajectory = (
+            f"{sysprompt}"
+            "We now want to identify whether the following code snippet is relevant to the described issue.\n"
+            "You will be provided with a source code snippet. You should decide whether it is relevant to the issue.\n"
+            "Please respond with either 'YES.' or 'NO.'.\n"
+            "Example Answer:\n"
+            "YES."
+            "--------------------------------------------\n"
+            "Here is the code snippet:\n"
+            f"{code_string}\n"
+            "--------------------------------------------\n"
+            "Is this code snippet relevant to the issue? Please respond with 'YES.' or 'NO.'.\n"
+        )
+        print(trajectory)
+        
+        for _ in range(max_tries):
+            llm_response = self.model.query_completion(trajectory, stop_token=".")
+            print(llm_response)
+            
+            response = llm_response.strip().upper()
+            if response in ["YES.", "NO."]:
+                return response
+            else:
+                # If the response is invalid, adjust the prompt to clarify the requirement
+                trajectory += "\nYour response was invalid. Please respond with either 'YES.' or 'NO.' only."
+
+        print("Failed to obtain a valid response from the LLM.")
+        return None
+        
+    def extract_code_snippets(self, file_path, func_name=None, class_name=None):
+        try:
+            with open(file_path, 'r') as file:
+                source_code = file.read()
+        except FileNotFoundError:
+            return f"Error: File not found at path {file_path}"
+        except Exception as e:
+            return f"Error: Unable to read file {file_path} due to {str(e)}"
+        
+        # Parse the source code into an AST
+        try:
+            tree = ast.parse(source_code)
+        except SyntaxError as e:
+            return f"Error: Failed to parse Python source file due to syntax error: {str(e)}"
+        
+        # Extract the function or class node
+        target_node = None
+        if func_name:
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef) and node.name == func_name:
+                    target_node = node
+                    break
+        elif class_name:
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ClassDef) and node.name == class_name:
+                    target_node = node
+                    break
+        
+        # If the target node wasn't found, return an error
+        if target_node is None:
+            target_type = "function" if func_name else "class"
+            return f"Error: {target_type} '{func_name or class_name}' not found in file {file_path}"
+
+        # Get the lines of the target node
+        start_line = target_node.lineno - 1  # Line numbers in AST are 1-based
+        end_line = target_node.end_lineno if hasattr(target_node, 'end_lineno') else None
+
+        # Return the relevant lines of code
+        code_lines = source_code.splitlines()
+        extracted_code = "\n".join(code_lines[start_line:end_line])
+
+        return extracted_code
