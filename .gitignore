@@ -156,3 +156,5 @@ dmypy.json
 cython_debug/
 
 smolcoder.log
+
+repos/
