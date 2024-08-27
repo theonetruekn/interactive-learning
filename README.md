@@ -13,6 +13,8 @@ All these agents have in common that they are using GPT4 or some other high-end 
 
 The ambitious goal of this project is to get onto the leaderboard of [SWEBench](https://www.swebench.com/) - a by-now well-established benchmark for coding agents.
 
+The **master** Branch is loosely based on [SWE-Agent](https://swe-agent.com/), while the **agentless** branch is based on same named paper [Agentless](https://arxiv.org/abs/2407.01489).
+
 This project is a work-in-progress.
 
 ## Roadmap
