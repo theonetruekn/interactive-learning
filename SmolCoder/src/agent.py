@@ -791,7 +791,7 @@ class SmolCoder:
         # Construct the prompt for the LLM to generate the patch
         prompt = (
             f"{sysprompt}"
-            "We want to generate a patch for the following code snippet based on the described issue.\n"
+            "Your task is to generate a git patch for the later provided code snippet which fixes the issue above.\n"
             "You will be provided with a source code snippet, and you should generate a patch to fix the issue described earlier.\n"
             "The patch should be in the standard unified diff format and it should end with the stop token `--- END OF DIFF ---`. DO NOT ADD ANYTHING ELSE TO YOUR RESPONSE!\n\n"
             "**Example Output:**\n"
@@ -801,7 +801,7 @@ class SmolCoder:
             "def greet(name):\n"
             "-    print(f'Hello, {name}!')\n"
             "+    print(f'Hi, {name}!')  # Changed greeting\n"
-            "+"
+            "+\n"
             "-def farewell(name):\n"
             "-    print(f'Goodbye, {name}!')\n"
             "+def farewell(name, time_of_day):\n"
@@ -811,10 +811,10 @@ class SmolCoder:
             "+    return input(question)\n"
             "--- END OF DIFF ---\n\n"
             "--------------------------------------------\n"
-            "Here is the code snippet:\n"
+            "Here is the code snippet, base your reponse on it:\n"
             f"{code_string}\n"
             "--------------------------------------------\n"
-            "Please provide the patch in the unified diff format below:\n"
+            "Please provide the patch in the unified diff format below, that fixes the described Issue:\n"
         )
         
         for _ in range(max_tries):
