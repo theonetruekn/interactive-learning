@@ -106,6 +106,10 @@ class SmolCoder:
                         },
                     ]
             data = self.find_sus_code_snippets(sysprompt, data, max_tries=2)
+
+            if data is None:
+                print("Agent is stopping because of an error that couldn't be corrected.")
+                return ""
         
         # ----------------------------------
         #  REPAIR CODE
@@ -487,7 +491,9 @@ class SmolCoder:
         data = None
         found_headers = False
         filtered_data = None
+        correct_json = False
         for _ in range(max_tries):
+            correct_json = False
             # Query the LLM for its choice of classes/functions.
             llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
             
@@ -506,6 +512,8 @@ class SmolCoder:
                 trajectory += "Please try again."
                 trajectory += self.prompt_list_headers(max_headers)
                 continue
+            
+            correct_json = True
             
             # This checks if the functions and classes inside the json exist
             valid, error, filtered_data = self.validate_json_classes_functions(data)
@@ -526,6 +534,10 @@ class SmolCoder:
         print("------------------------------------\n")
         print("------------------------------------\n")
         
+        if not correct_json:
+            print("After the maximum number of tries, the LLM produced syntactical wrong json code, while trying to find headers.")
+            return None
+
         if not found_headers:
             print("Sucks to suck, LLM didn't find only valid classes/functions.")
             return filtered_data
