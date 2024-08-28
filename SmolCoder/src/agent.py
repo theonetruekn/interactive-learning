@@ -105,8 +105,21 @@ class SmolCoder:
                             ]
                         },
                     ]
-            return self.find_sus_code_snippets(sysprompt, data, max_tries=2)
+            data = self.find_sus_code_snippets(sysprompt, data, max_tries=2)
 
+        if self.phase <= 3:
+            print("REPAIR PHASE:\n\n")
+            if self.phase == 3:
+                data = [
+                        {
+                            "file_path": "./repos/sqlfluff/src/sqlfluff/core/parser/lexer.py",
+                            "selected_classes": [
+                                "BlockTracker",
+                                "Lexer"
+                            ]
+                        },
+                    ]
+            self.repair(sysprompt, data)
     
     def parse_python_file(self, file_path, file_content=None):
         """Parse a Python file to extract class and function definitions with their line numbers.
@@ -625,3 +638,82 @@ class SmolCoder:
         extracted_code = "\n".join(code_lines[start_line:end_line])
 
         return extracted_code
+
+    def repair(self, sysprompt, data):
+        # Iterate through each element in the JSON data
+        for element in data:
+            file_path = element.get("file_path")
+            selected_functions = element.get("selected_functions", [])
+            selected_classes = element.get("selected_classes", [])
+            
+            relevant_functions = []
+            relevant_classes = []
+
+            # Process each function in the selected_functions list
+            for func in selected_functions:
+                # Extract the code snippet for the current function
+                code_string = self.extract_code_snippets(file_path, func_name=func, class_name=None)
+                
+                # Handle extraction errors
+                if code_string.startswith("Error"):
+                    print(f"Error while extracting code for function '{func}' in file '{file_path}'")
+                    continue
+
+                self.generate_patch(sysprompt, code_string)
+
+            # Process each class in the selected_classes list
+            for cls in selected_classes:
+                # Extract the code snippet for the current class
+                code_string = self.extract_code_snippets(file_path, func_name=None, class_name=cls)
+                
+                if code_string.startswith("Error"):
+                    print(f"Error while extracting code for class '{cls}' in file '{file_path}'")
+                    continue
+
+                self.generate_patch(sysprompt, code_string)
+    
+    def generate_patch(self, sysprompt, code_string, max_tries=5):
+        # Construct the prompt for the LLM to generate the patch
+        prompt = (
+            f"{sysprompt}"
+            "We want to generate a patch for the following code snippet based on the described issue.\n"
+            "You will be provided with a source code snippet, and you should generate a patch to fix the issue described earlier.\n"
+            "The patch should be in the standard unified diff format.\n"
+            "--------------------------------------------\n"
+            "Here is the code snippet:\n"
+            f"{code_string}\n"
+            "--------------------------------------------\n"
+            "Please provide the patch in the unified diff format below:\n"
+        )
+        
+        for _ in range(max_tries):
+            # Query the LLM to generate a patch
+            llm_response = self.model.query_completion(prompt, stop_token=None)
+            print(llm_response)
+
+            # Verify if the response is a valid patch
+            if self.is_valid_patch(llm_response):
+                # Save the patch to a file
+                self.save_patch_to_file(llm_response)
+                return
+
+            # If invalid, adjust the prompt to clarify the format requirement
+            prompt += "\nYour response was not a valid patch. Please provide a valid patch in unified diff format."
+
+        print("Failed to obtain a valid patch from the LLM.")
+
+    def is_valid_patch(self, patch_string):
+        # Basic validation to check if the patch string contains diff format headers
+        return patch_string.startswith("diff") or patch_string.startswith("---")
+
+    def save_patch_to_file(self, patch_string):
+        patch_dir = "patches"
+        if not os.path.exists(patch_dir):
+            os.makedirs(patch_dir)
+        
+        patch_filename = os.path.join(patch_dir, "patch.diff")
+
+        with open(patch_filename, "w") as patch_file:
+            patch_file.write(patch_string)
+        
+        print(f"Patch saved to {patch_filename}.")
