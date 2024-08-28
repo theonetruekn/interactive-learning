@@ -123,7 +123,7 @@ class SmolCoder:
                             ]
                         },
                     ]
-            self.repair(sysprompt, json.loads(data))
+            self.repair(sysprompt, data)
     
     def parse_python_file(self, file_path, file_content=None):
         """Parse a Python file to extract class and function definitions with their line numbers.
@@ -658,7 +658,7 @@ class SmolCoder:
             print("Relevant classes/functions identified: ", relevant_data)
 
         # Return the relevant data in JSON format
-        return json.dumps(relevant_data, indent=4)
+        return relevant_data
 
     def evaluate_relevance(self, sysprompt, code_string, max_tries=5):
         trajectory = (
