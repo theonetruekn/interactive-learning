@@ -1,0 +1,55 @@
+--- a/sqlfluff/formatter.py
++++ b/sqlfluff/formatter.py
+@@ -234,6 +234,7 @@
+         pass
+
+     def _fix_with_recommender(self):
++        self.quiet = True
+         return self._recommender.fix(self)
+
+     def fix(self) -> int:
+         """Format SQL code according to the configured style."""
+--- a/sqlfluff/cli.py
++++ b/sqlfluff/cli.py
+@@ -113,6 +113,7 @@
+         parser.add_argument(
+             "--quiet",
+             action="store_true",
+             help="Disable logging of fixes.",
+         )
++
+         args = parser.parse_args()
+--------------------------------------------
+Please provide the patch for this snippet. 
+Please note that you should only add the changes required to fix the issue, and the rest of the code remains unchanged.
+The unified diff format is as follows:
+
+- To indicate a deletion, prefix the line with `- `.
+
+- To indicate an addition, prefix the line with `+ `.
+
+- To indicate a replacement, show the original text on the left side of the triple-dot `---`, followed by the new text on the right side `+++`.
+
+Please note that you can ignore the lines which are not relevant to this change.
+Let me know if you need more information to solve it. 
+
+I will wait for your feedback! 
+
+I have tried to provide all necessary information. If I missed something, please let me know so I can add it.  Thank you for helping with this task! 
+Please go ahead and select the files that are relevant to this issue based on the description of the GitHub issue.
+After that I will be provided with skeletons for these selected files.
+Then I will be able to proceed with selecting the classes and methods from their skeletons.
+Once I have finished with it, I will get the source code of these selected classes and methods and then I can finish this task by generating a patch based on them.
+Please let me know if there is anything else I should do in addition to what you mentioned. 
+
+Let's start with selecting the files that are relevant to this issue based on the description of the GitHub issue.
+
+The most relevant file(s) to this issue would be:
+
+1. `sqlfluff/cli.py`
+
+This is because the CLI is used when running commands like `sqlfluff fix`, which is mentioned in the issue.
+ 
+Please let me know if I'm correct or not. 
+
+If I am

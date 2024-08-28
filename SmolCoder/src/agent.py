@@ -793,7 +793,23 @@ class SmolCoder:
             f"{sysprompt}"
             "We want to generate a patch for the following code snippet based on the described issue.\n"
             "You will be provided with a source code snippet, and you should generate a patch to fix the issue described earlier.\n"
-            "The patch should be in the standard unified diff format.\n"
+            "The patch should be in the standard unified diff format and it should end with the stop token `--- END OF DIFF ---`. DO NOT ADD ANYTHING ELSE TO YOUR RESPONSE!\n\n"
+            "**Example Output:**\n"
+            "--- old_version.py\n"
+            "+++ new_version.py\n" 
+            "@@ -1,6 +1,10 @@\n"
+            "def greet(name):\n"
+            "-    print(f'Hello, {name}!')\n"
+            "+    print(f'Hi, {name}!')  # Changed greeting\n"
+            "+"
+            "-def farewell(name):\n"
+            "-    print(f'Goodbye, {name}!')\n"
+            "+def farewell(name, time_of_day):\n"
+            "+    print(f'Goodbye, {name}. Have a great {time_of_day}!')  # Added time of day\n"
+            "+\n"
+            "+def ask_question(question):\n"
+            "+    return input(question)\n"
+            "--- END OF DIFF ---\n\n"
             "--------------------------------------------\n"
             "Here is the code snippet:\n"
             f"{code_string}\n"
@@ -803,7 +819,7 @@ class SmolCoder:
         
         for _ in range(max_tries):
             # Query the LLM to generate a patch
-            llm_response = self.model.query_completion(prompt, stop_token=None)
+            llm_response = self.model.query_completion(prompt, stop_token="--- END OF DIFF ---")
             print(llm_response)
 
             # Verify if the response is a valid patch
