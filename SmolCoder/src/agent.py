@@ -1,4 +1,5 @@
 import os
+import re
 import ast
 import json
 
@@ -820,22 +821,58 @@ class SmolCoder:
         for _ in range(max_tries):
             # Query the LLM to generate a patch
             llm_response = self.model.query_completion(prompt, stop_token="--- END OF DIFF ---")
+
+            print(prompt)
             print(llm_response)
+            
+            prompt += llm_response
 
             # Verify if the response is a valid patch
-            if self.is_valid_patch(llm_response):
-                # Save the patch to a file
+            valid, error_msg = self.check_unified_diff_syntax(llm_response)
+            if valid:               # Save the patch to a file
                 self.save_patch_to_file(llm_response)
                 return
 
             # If invalid, adjust the prompt to clarify the format requirement
-            prompt += "\nYour response was not a valid patch. Please provide a valid patch in unified diff format."
+            prompt += f"\nYour response was not a valid patch: {error_msg}\n"
+            prompt += "--------------------------------------------\n"
+            prompt += "Please provide the patch in the unified diff format below, that fixes the described Issue:\n"
 
         print("Failed to obtain a valid patch from the LLM.")
 
-    def is_valid_patch(self, patch_string):
-        # Basic validation to check if the patch string contains diff format headers
-        return patch_string.startswith("diff") or patch_string.startswith("---")
+
+    def check_unified_diff_syntax(self, diff_string: str) -> tuple[bool, str]:
+        # Step 1: Ensure the string ends with "--- END OF DIFF ---"
+        if not diff_string.endswith('--- END OF DIFF ---'):
+            return False, "The diff does not end with '--- END OF DIFF ---'."
+
+        # Step 2: Remove the end marker and split the lines
+        diff_string = diff_string.rstrip('--- END OF DIFF ---').strip()
+        diff_lines = diff_string.splitlines()
+
+        # Step 3: Validate unified diff structure
+        if len(diff_lines) < 4:
+            return False, "The diff is too short to be valid."
+
+        # Unified diff header lines must start with '---' and '+++'
+        if not diff_lines[0].startswith('--- '):
+            return False, "The diff header must start with '--- ' followed by the original file name."
+        if not diff_lines[1].startswith('+++ '):
+            return False ,"The diff header must have '+++ ' followed by the new file name."
+
+        # Validate chunk headers
+        for i, line in enumerate(diff_lines[2:], start=2):
+            if line.startswith('@@'):
+                # Chunk header should follow this pattern: @@ -l,s +l,s @@
+                if not re.match(r'^@@ -\d+(,\d+)? \+\d+(,\d+)? @@', line):
+                    return False, f"Invalid chunk header format at line {i+1}: '{line}'"
+            elif line.startswith(' ') or line.startswith('-') or line.startswith('+'):
+                # Valid lines in a chunk are context (' '), removal ('-'), or addition ('+')
+                continue
+            else:
+                return False, f"Unexpected line format at line {i+1}: '{line}'"
+
+        return True, "The diff is correct."
 
     def save_patch_to_file(self, patch_string):
         patch_dir = "patches"
