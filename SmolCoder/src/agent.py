@@ -246,12 +246,22 @@ class SmolCoder:
                 if not isinstance(item['file_path'], str):
                     return (False, f"Error: 'file_path' at index {i} should be a string.")
                 
-                # Check for 'selected_functions' and 'selected_classes' keys and their types
-                if 'selected_functions' not in item or not isinstance(item['selected_functions'], list):
-                    return (False, f"Error: 'selected_functions' at index {i} should be a list.")
-                if 'selected_classes' not in item or not isinstance(item['selected_classes'], list):
-                    return (False, f"Error: 'selected_classes' at index {i} should be a list.")
+                # Check if 'selected_functions' key exists
+                if 'selected_functions' not in item:
+                    return (False, f"Error: 'selected_functions' key is missing at index {i}.")
                 
+                # Check if 'selected_functions' is a list
+                if not isinstance(item['selected_functions'], list):
+                    return (False, f"Error: 'selected_functions' at index {i} should be a list.")
+                
+                # Check if 'selected_classes' key exists
+                if 'selected_classes' not in item:
+                    return (False, f"Error: 'selected_classes' key is missing at index {i}.")
+                
+                # Check if 'selected_classes' is a list
+                if not isinstance(item['selected_classes'], list):
+                    return (False, f"Error: 'selected_classes' at index {i} should be a list.")
+
                 # Convert all elements in 'selected_functions' and 'selected_classes' to strings
                 item['selected_functions'] = [str(func) for func in item['selected_functions']]
                 item['selected_classes'] = [str(cls) for cls in item['selected_classes']]
