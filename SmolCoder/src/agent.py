@@ -106,6 +106,10 @@ class SmolCoder:
                         },
                     ]
             data = self.find_sus_code_snippets(sysprompt, data, max_tries=2)
+        
+        # ----------------------------------
+        #  REPAIR CODE
+        # ----------------------------------
 
         if self.phase <= 3:
             print("REPAIR PHASE:\n\n")
@@ -119,7 +123,7 @@ class SmolCoder:
                             ]
                         },
                     ]
-            self.repair(sysprompt, data)
+            self.repair(sysprompt, json.loads(data))
     
     def parse_python_file(self, file_path, file_content=None):
         """Parse a Python file to extract class and function definitions with their line numbers.
