@@ -476,6 +476,7 @@ class SmolCoder:
         trajectory += self.prompt_list_headers(max_headers)
         data = None
         found_headers = False
+        filtered_data = None
         for _ in range(max_tries):
             # Query the LLM for its choice of classes/functions.
             llm_response = self.model.query_completion(trajectory, stop_token="--- END OF LIST ---")
@@ -516,13 +517,11 @@ class SmolCoder:
         print("------------------------------------\n")
         
         if not found_headers:
-            data = filtered_data
             print("Sucks to suck, LLM didn't find only valid classes/functions.")
+            return filtered_data
         else:
-            data = data
             print("found the following data: ", str(data))
-
-        return data
+            return data
 
     def parse_file_paths(self, text, start_cwd, stop_token='--- END OF LIST ---'):
         """
