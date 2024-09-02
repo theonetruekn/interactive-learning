@@ -16,7 +16,7 @@ The ambitious goal of this project is to get onto the leaderboard of [SWEBench](
 This project has three distinct parts:
 - **SmolCoder**, which can be found on the **master** Branch is loosely based on [SWE-Agent](https://swe-agent.com/).
 - **Agentless**. which can be found on the **agentless** branch is based on same named paper [Agentless](https://arxiv.org/abs/2407.01489).
-- **InteractiveLearning**, which can be found in the `evaluation.ipynb`.
+- **InteractiveLearning**, which can be found in the [evaluation notebookb](Evaluation.ipynb).
 
 This project is a work-in-progress.
 
@@ -37,7 +37,7 @@ This project is a work-in-progress.
 
 ### Agentless and Interactive-Learning: Evaluation
 
-To run the evaluation for *agentless* or *interactiv-learning*, check out the [evaluation notebookb](Evaluation.ipynb).
+To run the evaluation for *agentless* or *interactive-learning*, check out the [evaluation notebookb](Evaluation.ipynb).
 
 ### SmolCoder: Evaluation
 
