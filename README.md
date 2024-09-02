@@ -13,7 +13,10 @@ All these agents have in common that they are using GPT4 or some other high-end 
 
 The ambitious goal of this project is to get onto the leaderboard of [SWEBench](https://www.swebench.com/) - a by-now well-established benchmark for coding agents.
 
-The **master** Branch is loosely based on [SWE-Agent](https://swe-agent.com/), while the **agentless** branch is based on same named paper [Agentless](https://arxiv.org/abs/2407.01489).
+This project has three distinct parts:
+- **SmolCoder**, which can be found on the **master** Branch is loosely based on [SWE-Agent](https://swe-agent.com/).
+- **Agentless**. which can be found on the **agentless** branch is based on same named paper [Agentless](https://arxiv.org/abs/2407.01489).
+- **InteractiveLearning**, which can be found in the `evaluation.ipynb`.
 
 This project is a work-in-progress.
 
@@ -30,11 +33,18 @@ This project is a work-in-progress.
  - Phi3 as coding agent, finetuned on code/tool-use
  - Phi3 as coding agent, finetuned on code/tool-use with human interaction
 
-## Run the SWE-Bench Evaluation
+## SWE-Bench Evaluation
+
+### Agentless and Interactive-Learning: Evaluation
+
+To run the evaluation for *agentless* or *interactiv-learning*, check out the [evaluation notebookb](Evaluation.ipynb).
+
+### SmolCoder: Evaluation
 
 Python version needs to be at least `3.11` and docker needs to be [installed](https://docs.docker.com/engine/install/) ([alternative](https://get.docker.com/)) and docker needs to run as [daemon](https://www.geeksforgeeks.org/how-to-install-and-configure-docker-on-arch-based-linux-distributionsmanjaro/).
 
-**Test the SWE-Bench installation**
+#### Test the SWE-Bench installation
+
 1. Navigate inside the folder and make sure the requirements are installed:
 ```
 cd Evaluation
@@ -52,7 +62,7 @@ python -m swebench.harness.run_evaluation \
 ```
 
 
-**Run the SWE-Bench evaluation**
+#### Run the SWE-Bench evaluation
 
 0. Install the required python packages, I would recommend doing it using conda: `conda create --name <env> --file requirements.txt` and activate it `conda activate <env>`.
 1. Get your predictions by running the appropiate part of the `Evaluation.ipynb`, make sure to choose the correct dataset (either `swe-bench.json` for the full dataset or `swe-bench-lite.json` for a smaller version).
@@ -72,7 +82,7 @@ python -m swebench.harness.run_evaluation \
 ```
 4. Your should find a `json` report, listing the evaluation result of your predictions,with `YOUR_ID` inside the `SWE-bench` directory.
 
-### Run SWE-Bench-Evaluation on "BwUniCluster" or other Slurm Batch System
+#### Run SWE-Bench-Evaluation on "BwUniCluster" or other Slurm Batch System
 
 0. Connect and login in your server.
 1. Clone this repository and put an `ollama` [binary](https://github.com/ollama/ollama/releases) into the folder.
