@@ -20,7 +20,7 @@ class LLM:
                 "prompt": prompt,
                 "stream": True,
                 "raw": self.raw, # needs to be off for phi3
-                "options": {"cache_prompt": True, "seed": seed, "num_predict": 500}
+                "options": {"cache_prompt": True, "seed": seed, "num_predict": 1000}
             }
 
             json_data = json.dumps(data)
