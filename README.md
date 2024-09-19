@@ -37,7 +37,7 @@ This project is a work-in-progress.
 
 ### Agentless and Interactive-Learning: Evaluation
 
-To run the evaluation for *agentless* or *interactive-learning*, check out the [evaluation notebookb](Evaluation.ipynb).
+To run the evaluation for *agentless* or *interactive-learning*, check out the [evaluation notebook](Evaluation.ipynb).
 
 ### SmolCoder: Evaluation
 
