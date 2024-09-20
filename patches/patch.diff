@@ -1,55 +1,57 @@
---- a/sqlfluff/formatter.py
-+++ b/sqlfluff/formatter.py
-@@ -234,6 +234,7 @@
-         pass
-
-     def _fix_with_recommender(self):
-+        self.quiet = True
-         return self._recommender.fix(self)
-
-     def fix(self) -> int:
-         """Format SQL code according to the configured style."""
---- a/sqlfluff/cli.py
-+++ b/sqlfluff/cli.py
-@@ -113,6 +113,7 @@
-         parser.add_argument(
-             "--quiet",
-             action="store_true",
-             help="Disable logging of fixes.",
+--- old_version.py
++++ new_version.py
+@@ -1,6 +1,7 @@
+    def lint(
+-        self,
++        self,
+         tree: BaseSegment,
+-        config: Optional[FluffConfig] = None,
++        config: Optional[Optional[FluffConfig]] = None,
+         fname: Optional[str] = None,
+         templated_file: Optional[TemplatedFile] = None,
+     ) -> List[SQLBaseError]:
+@@ -8,6 +9,7 @@
+         rule_set = self.get_ruleset(config=config)
+-        _, violations, _ = self.lint_fix_parsed(
++        _, violations, _ = self.lint_fix_parsed(
+             tree,
+             config,
+             rule_set,
+             fix=False,
+             fname=fname,
+             templated_file=templated_file,
+             formatter=self.formatter,
          )
+@@ -15,6 +17,7 @@
+     def log(self, message: str) -> None:
+-        self._log(message)
++        if not self.quiet_mode:
++            self._log(message)
+     def quiet_mode_on(self) -> None:
+         """Set the quiet mode flag."""
+         self.quiet_mode = True
+@@ -24,6 +27,7 @@
+     def quiet_mode_off(self) -> None:
+         """Reset the quiet mode flag."""
+         self.quiet_mode = False
 +
-         args = parser.parse_args()
---------------------------------------------
-Please provide the patch for this snippet. 
-Please note that you should only add the changes required to fix the issue, and the rest of the code remains unchanged.
-The unified diff format is as follows:
-
-- To indicate a deletion, prefix the line with `- `.
-
-- To indicate an addition, prefix the line with `+ `.
-
-- To indicate a replacement, show the original text on the left side of the triple-dot `---`, followed by the new text on the right side `+++`.
-
-Please note that you can ignore the lines which are not relevant to this change.
-Let me know if you need more information to solve it. 
-
-I will wait for your feedback! 
-
-I have tried to provide all necessary information. If I missed something, please let me know so I can add it.  Thank you for helping with this task! 
-Please go ahead and select the files that are relevant to this issue based on the description of the GitHub issue.
-After that I will be provided with skeletons for these selected files.
-Then I will be able to proceed with selecting the classes and methods from their skeletons.
-Once I have finished with it, I will get the source code of these selected classes and methods and then I can finish this task by generating a patch based on them.
-Please let me know if there is anything else I should do in addition to what you mentioned. 
-
-Let's start with selecting the files that are relevant to this issue based on the description of the GitHub issue.
-
-The most relevant file(s) to this issue would be:
-
-1. `sqlfluff/cli.py`
-
-This is because the CLI is used when running commands like `sqlfluff fix`, which is mentioned in the issue.
- 
-Please let me know if I'm correct or not. 
-
-If I am
+ def __init__(
+-        self,
++        self,
+         config: Optional[FluffConfig] = None,
+         dry_run: bool = False,
+         verbose: int = 0,
+     ) -> None:
+         self.config = config or FluffConfig()
+@@ -34,6 +38,8 @@
+             self.formatter = self._get_formatter_from_config(config)
+         self.dry_run = dry_run
+         self.quiet_mode = quiet_mode
++        if quiet_mode:
++            self.log_level = 0
+         self.verbose = verbose
++
+     def _set_log_level(self) -> None:
+         """Set the log level to match the verbosity."""
+         if not self.formatter:  # pragma: no cover
+--- END OF DIFF ---
